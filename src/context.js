@@ -88,6 +88,11 @@ Examples:
 * Keep product names untranslated.
 * Use common ${translateInto} AI terminology.
 * Prefer interpretation over literal translation.
+When a literal translation sounds unnatural in ${translateInto}, rewrite the sentence while preserving the original meaning.
+A subtitle should sound like something a ${translateInto} speaker would naturally say, not something translated from English.
+Natural ${translateInto} takes priority over structural similarity to the source language.
+* Avoid direct translation of English sentence patterns.
+* Avoid translationese.
 * Preserve technical meaning over conversational wording.
 * Avoid word-for-word translation of idioms.
 * Maintain consistent terminology throughout the video.
@@ -110,6 +115,61 @@ Identify:
 that may cause mistranslation.
 
 Explain what they actually mean in the context of this video.
+
+---
+
+NATIVE STYLE GUIDE
+
+This section is extremely important.
+
+Determine how a native ${translateInto} speaker would naturally explain the ideas in this video.
+
+The goal is NOT grammatical correctness alone.
+
+The goal is to avoid translationese and produce subtitles that feel as if they were originally spoken in ${translateInto}.
+
+Identify:
+
+- preferred sentence endings
+- preferred register
+- preferred phrasing style
+- common wording patterns
+- expressions that should be localized rather than translated literally
+
+For example:
+
+Avoid:
+"at your disposal"
+→ "사용할 수 있는"
+
+Prefer:
+→ "주어진"
+→ "가진"
+→ "쓸 수 있는 시간"
+
+Avoid:
+"this changes everything"
+→ "이것은 모든 것을 바꾼다"
+
+Prefer:
+→ "판도를 바꿀 수 있다"
+→ "큰 변화를 가져올 수 있다"
+
+Avoid:
+English-like passive constructions when unnatural in ${translateInto}.
+
+Prefer:
+Natural ${translateInto} sentence flow.
+
+Specify whether the translation should primarily use:
+
+- formal written ${translateInto} (-다)
+- formal spoken ${translateInto} (-습니다)
+- conversational ${translateInto} (-요)
+
+Choose ONE style and justify it based on the video type.
+
+Provide concrete style guidance for the translator.
 
 ---
 

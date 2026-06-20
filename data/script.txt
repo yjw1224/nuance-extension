@@ -1,203 +1,92 @@
-Hi there!
-My name is Xavier and you might have read
-articles online saying that cryptocurrencies
-like Bitcoin uses enormous amounts of energy
-to secure their networks.
-But why is that - and more importantly - what
-are the alternatives?
-Mining new coins takes a lot of computing
-power because of the proof-of-work algorithm.
-The idea was first introduced in 1993 to combat
-spam emails and was formally called “proof-of-work”
-in 1997.
-However the technique went largely unused
-until Satoshi Nakamoto created Bitcoin in
-2009.
-He realized that this mechanism could be used
-to reach consensus between many nodes on a
-network and he used it as a way to secure
-the Bitcoin blockchain.
-However, the proof-of-work algorithm works
-by having all nodes solve a cryptographic
-puzzle.
-This puzzle is solved by miners and the first
-one to find the solution gets the miner reward.
-This has led to a situation where people are
-building larger and larger mining farms like
-this one.
-According to Digiconomist, Bitcoin miners
-alone uses about 54 TWh of electricity, enough
-to power 5 million households in the US or
-even power the entire country of New Zealand
-or Hungary.
-But it doesn’t stop there.
-Proof-of-work gives more rewards to people
-with better and more equipment.
-The higher your hash rate is, the higher the
-chance that you’ll get to create the next
-block and receive the mining reward.
-To increase chances even further, miners have
-come together in what’s called “mining
-pools”.
-They combine their hashing power and distribute
-the reward evenly across everyone in the pool.
-So to sum it up: proof-of-work is causing
-miners to use massive amounts of energy and
-it encourages the use of mining pools which
-makes the blockchain more centralized as opposed
-to decentralized.
-So to solve these issue’s we have to find
-a new consensus algorithm that is as effective
-or better then proof-of-work.
-In 2011 a Bitcointalk forum user called QuantumMechanic
-proposed a technique that he called “proof-of-stake”.
-The basic idea is that letting everyone compete
-against each other with mining is wasteful.
-So instead proof-of-stake uses an election
-process in which 1 node is randomly chosen
-to validate the next block.
-Oh yeah, small difference in terminology there.
-Proof-of-stake has no miners but instead has
-“validators” and it doesn’t let people
-“mine” blocks but instead “mint” or
-“forge” blocks.
-Validators aren’t chosen completely randomly.
-To become a validator, a node has to deposit
-a certain amount of coins into the network
-as stake.
-You can think of this as a security deposit.
-The size of the stake determines the chances
-of a validator to be chosen to forge the next
-block.
-It’s a linear correlation.
-Let’s say Bob deposits $100 dollars into
-the network while Alice deposits $1000.
-Alice now has a 10 times higher chance of
-being chosen to forge the next block.
-This might not seem fair because it favors
-the rich, but in reality it’s more fair
-compared to proof-of-work.
-With proof-of-work rich people can enjoy the
-power of economies at scale.
-The price they pay for mining equipment and
-electricity doesn’t go up in a linear fashion.
-Instead the more they buy, the better prices
-they can get.
-Economies at scale!
-But back to proof-of-stake.
-If a node is chosen to validate the next block,
-he’ll check if all the transactions within
-it are indeed valid.
-If everything checks out, the node signs off
-on the block and adds it to the blockchain.
-As a reward the node receives the fees that
-are associated with each transaction.
-Okay but how can we trust other validators
-on the network?
-Well that’s where the stake comes in.
-Validators will lose a part of their stake
-if they approve fraudulent transactions.
-As long as the stake is higher then what the
-validator gets from the transaction fees,
-we can trust them to correctly do their job.
-Because if not, they lose more money then
-they gain.
-It’s a financial motivator and holds up
-as long as the stake is higher then the sum
-of all the transaction fees.
-If a node stops being a validator, his stake
-plus all the transaction fees that he got
-will be released after a certain period of
-time.
-Not straight away because the network still
-needs to be able to punish you, should they
-discover that some of your blocks where fraudulent.
-So the differences between Proof-of-work and
-Proof-of-stake are quite significant.
-Proof-of-stake doesn’t let everyone mine
-for new blocks and therefore uses considerably
-less energy.
-It’s also more decentralized.
-How is that?
-Well in proof-of-work we have something called
-mining pools.
-Those are people who are teaming up to increase
-their chances of mining a new block and thus
-collecting the reward.
-However these pools now control large portions
-of the bitcoin blockchain.
-They centralize the mining process and that’s
-dangerous.
-If the three biggest mining pools would merge
-together, they would have a majority stake
-in the network and could start approving fraudulent
-transactions.
-Another important advantage is that setting
-up a node for a proof-of-stake based blockchain
-is a lot less expensive compared to a proof-of-work
-based one.
-You don’t need expensive mining equipment
-and thus proof-of-stake encourages more people
-to set up a node, making the network more
-decentralized and also more secure.
-But even proof-of-stake isn’t perfect and
-it also has some flaws.
-You might think: “hold on a minute!
-If I buy a majority stake in the network,
-I can effectively control it and approve fake
-transactions” and you would be correct.
-This is called the 51% attack and was first
-discussed as a weak point of the proof-of-work
-algorithm.
-If a single miner or group of miners can obtain
-51% of the hashing power, they can effectively
-control the blockchain.
-Proof-of-stake on the other hand makes this
-attack very impractical, depending on the
-value of a cryptocurrency.
-If Bitcoin would be converted to proof-of-stake,
-acquiring 51% of all the coins would set you
-back a whopping 79 billion dollars.
-So the 51% attack is actually less likely
-to happen with proof-of-stake.
-But that’s not the only risk.
-Proof-of-stake algorithms also have to be
-careful how they select the next validators.
-It can’t be completely random because the
-size of the stake has to be factored in.
-But at the same time the stake alone isn’t
-enough because that will favor rich people,
-who will get chosen more frequently, will
-collect more transaction fees, become even
-richer and thus increase their chances of
-being chosen as validator even further.
-There are a number of proposals to fix this
-like coin age based selection.
-Another potential problem is when the network
-choses the next validator but he doesn’t
-turn up to do his job.
-This could easily be solved by choosing a
-large number of backup validators as a fallback.
-In short: proof-of-stake brings additional
-risks when compared to proof-of-work and a
-lot of research is needed to understand these
-risks and to mitigate them.
-Alright so now that we know what proof-of-stake
-is, what benefits it has and what risks are
-involved, let’s look at real world usage.
-A few examples of coins that use it right
-now are Peercoin, Lisk and Nxt but more cryptocurrencies
-are likely to follow in the future.
-Ethereum for instance is working on implementing
-a proof-of-stake system which they call Casper.
-It’s currently deployed on the Ethereum
-testnet and is actively being developed.
-And also the Cardano project has long been
-working on creating the a provable secure
-proof-of-stake algorithm that they call Ouroboros.
-More about that in this video right here.
-So that was it for this video.
-If you liked it, give it a thumbs up and consider
-getting subscribed.
-Thank you very much for watching and I’ll
-see you in the next video!
+Human existence is scary and confusing.
+A few hundred thousand years ago, we became conscious and found ourselves in a strange place.
+It was filled with other beings. We could eat some; some could eat us.
+There was liquid stuff we could drink; things we could use to make more things.
+The daytime sky had a tiny yellow ball that warmed our skin.
+The night sky was filled with beautiful lights.
+This place was obviously made for us.
+Something was watching over us.
+We were home. This made everything much less scary and confusing.
+But the older we got, the more we learned about the world and ourselves.
+We learned that the twinkling lights are not shining beautifully for us, they just are.
+We learned that we're not at the center of what we now call the universe,
+and that it is much, much older than we thought.
+We learned that we're made of many little dead things,
+which make up bigger things that are not dead, for some reason,
+and that we're just another temporary stage in a history going back over a billion years.
+We learned, in awe, that we live on a moist speck of dust moving around a medium-sized star
+in a quiet region of one arm of an average galaxy, which is part of a galaxy group that we will never leave.
+And this group is only one of thousands that, together, make up a galaxy supercluster.
+But even our supercluster is only one in thousands that make up what we call the observable universe.
+The universe might be a million times bigger, but we will never know.
+We can throw words around like two hundred million galaxies
+or trillions of stars or bazillions of planets,
+but all of these numbers mean nothing. Our brains can't comprehend these concepts.
+The universe is too big. There is too much of it.
+But size is not the most troubling concept we have to deal with.
+It's time, or, more precisely, the time we have.
+If you're lucky enough to live to one hundred,
+you have five thousand two hundred weeks at your disposal.
+If you're twenty-five now, then you have three thousand nine hundred weeks left.
+If you're going to die at seventy, then there are two thousand three hundred and forty weeks left -
+a lot of time, but also ... not really.
+And then what?
+Your biological processes will break down,
+and the dynamic pattern that is you will stop beinge dynamic.
+It will dissolve until there is no you left.
+Some believe that there is a part of us we can't see or measure,
+but we have no way to find out, so this life might be it
+and we might end up dead forever.
+This is less scary than it sounds, though.
+If you don't remember the 13.75 billion years that went by before you existed,
+Then the trillions and trillions and trillions of years that come after will pass in no time once you're gone.
+Close your eyes. Count to 1.
+That's how long forever feels.
+And as far as we know, in the end, the universe itself will die and nothing will ever change again.
+Our videos induce existential dread in many people,
+and the last few minutes probably haven't helped.
+So, for once, we want to offer a different way of looking at these things:
+an unscientific, subjective point of view, the philosophy of Kurzgesagt, if you want.
+Please take it with a grain of salt; we don't know any more about human existence than you do.
+We counter existential dread with optimistic nihilism.
+What do we mean by that?
+Well, to summarize, it seems very unlikely that 200 trillion trillion stars have been made for us.
+In a way, it feels like the cruelest joke in existence has been played on us.
+We became self-aware only to realize this story is not about us.
+While it is great to know about electrons and the powerhouse of the cell,
+Science doesn't do a lot to make this less depressing.
+Okay, but so what?
+You only get one shot at life, which is scary, but it also sets you free.
+If the universe ends in heat death, every humiliation you suffer in your life will be forgotten.
+Every mistake you made will not matter in the end.
+Every bad thing you did will be voided.
+If our life is all we get to experience, then it's the only thing that matters.
+If the universe has no principles, the only principles relevant are the ones we decide on.
+If the universe has no purpose, then we get to dictate what its purpose is.
+Humans will most certainly cease to exist at some point,
+but before we do, we get to explore ourselves and the world around us.
+We get to experience feelings. We get to experience food, books, sunrises, and being with each other.
+The fact that we're even able to think about these things is already kind of incredible.
+It's easy to think of ourselves as separated from everything, but this is not true.
+We are as much the universe as a neutron star
+or a black hole or a nebula.
+Even better, actually, we are its thinking and feeling part:
+the centre organs of the universe.
+We are truly free in a universe-sized playground,
+so we might as well aim to be happy and to build some kind of utopia in the stars.
+It's not as if we've found out everything there is to know
+We don't know why the rules of the universe are as they are,
+how life came into existence, what life is.
+We have no idea what consciousness is or if we are alone in the universe.
+But we can try to find some answers.
+There are billions of stars to visit, diseases to cure,
+people to help, happy feelings to be experienced,
+and video games to finish.
+There is so much to do.
+So, wrapping up, you've probably used up a good chunk of the time available to you.
+If this is our one shot at life, there is no reason not to have fun
+and live as happy as possible.
+Bonus points if you made the life of other people better.
+More bonus points if you help build a galactic human empire.
+Do the things that make you feel good.
+You get to decide whatever this means for you.

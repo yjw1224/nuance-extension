@@ -1,0 +1,74 @@
+VIDEO BRIEF
+- What: Explains why Bitcoin’s proof-of-work (PoW) consumes large energy, introduces proof-of-stake (PoS) as an alternative, compares trade-offs, and lists real-world PoS projects.
+- Domain: Cryptocurrency / blockchain / technology (educational explainer).
+- Tone: Conversational-educational, lightly technical, explanatory with examples and simple hypotheticals.
+
+KEY ENTITIES
+- People: Satoshi Nakamoto, Bitcointalk user “QuantumMechanic”, narrator “Xavier”
+- Companies/Orgs/Projects: Bitcoin, Ethereum (Casper), Cardano (Ouroboros), Peercoin, Lisk, Nxt
+- Data source: Digiconomist
+- Concepts/Tech: proof-of-work (PoW), proof-of-stake (PoS), miners, validators, mining pools, hash rate, 51% attack, testnet, coin age selection
+
+TERM DISAMBIGUATION
+- Term: Mining / Miner
+  - Meaning here: PoW process and actors that run specialized hardware to find block solutions.
+  - Incorrect: “mining” as physical resource extraction.
+  - Korean: 채굴 / 채굴자
+- Term: Proof-of-Work
+  - Meaning: Consensus algorithm requiring computational puzzle-solving.
+  - Incorrect: Any generic “work” or effort.
+  - Korean: 작업증명 (PoW) — first occurrence: 작업증명(PoW)
+- Term: Proof-of-Stake
+  - Meaning: Consensus where validators are chosen proportionally to coins they lock as stake.
+  - Incorrect: “stake” as mere ownership without locking; “mining” process.
+  - Korean: 지분증명 (PoS) — first occurrence: 지분증명(PoS)
+- Term: Stake
+  - Meaning: Coins locked/deposited as collateral to be chosen as validator; financial bond that can be slashed.
+  - Incorrect: simple ownership, or stake as vote share without deposit.
+  - Korean: 스테이크(예치금)/지분(예치금). Use “지분(예치금)” when formal; “스테이크” acceptable in casual parts but define once.
+- Term: Validator
+  - Meaning: PoS actor who validates and signs blocks (not “miner”).
+  - Incorrect: salesperson/agent.
+  - Korean: 검증자
+- Term: Mint / Forge
+  - Meaning: PoS term for creating a new block.
+  - Incorrect: literal minting of coins only.
+  - Korean: 블록 민팅(생성) 또는 블록 생성 — pick one consistently (recommend “블록을 생성(민팅)”)
+- Term: Hash rate
+  - Meaning: Computational throughput for mining.
+  - Incorrect: hash as general data.
+  - Korean: 해시레이트 / 해시율 (use 해시레이트)
+- Term: Mining pool
+  - Meaning: Grouping of miners to combine hash power and share rewards.
+  - Incorrect: online forum group.
+  - Korean: 채굴 풀
+- Term: 51% attack
+  - Meaning: Controlling majority of validation/mining power to double-spend or censor.
+  - Incorrect: generic majority influence.
+  - Korean: 51% 공격
+- Term: Coin age based selection
+  - Meaning: PoS selection scheme that factors how long coins have been staked.
+  - Incorrect: coin market age or launch age.
+  - Korean: 코인 연령 기반 선택
+
+TRANSLATION RULES
+- Use standard Korean crypto terminology (작업증명, 지분증명, 채굴, 검증자, 채굴 풀, 트랜잭션 수수료).
+- Keep proper names and project names untranslated (Bitcoin, Ethereum, Cardano, Casper, Ouroboros, Peercoin, Lisk, Nxt, Digiconomist). If needed, append Korean pronunciation in parentheses only once.
+- First mention: spell out Korean term + English acronym (예: 지분증명(PoS)). Afterwards use Korean term only.
+- Translate “miners” → 채굴자; “validators” → 검증자; never swap them.
+- Translate “mint/forge” as “블록 생성(민팅)” and use “생성” in casual sentences.
+- Preserve numeric values, examples, and ratios exactly (e.g., $100 vs $1000, 54 TWh, 79 billion dollars).
+- Use gender-neutral phrasing (“해당 노드/검증자”) instead of “he/she”.
+- Prefer natural Korean idiomatic phrasing over literal word-for-word translation.
+- Maintain consistency: once a Korean term chosen, reuse it throughout.
+
+POTENTIAL TRAPS
+- “Mining” vs everyday “mining”: ensure it’s translated as 채굴 (블록체인) not 광산 채굴.
+- “Mint/forge” — unfamiliar to general viewers: mark as “블록 생성(민팅)” first time.
+- “Stake” ambiguity: clarify as 예치금/담보 that can be 슬래시(벌금) (slashed).
+- “Economies at scale” → translate as 규모의 경제 (meaning price/efficiency gains with scale).
+- “More decentralized” claim: video argues PoS can encourage decentralization due to lower node cost — translate as “더 분산화될 수 있다(가능성)” not absolute.
+- “Sign off on the block” → means cryptographic signature/approval, not casual approval; translate as “서명하고 블록에 추가/확정”.
+- “Release after a certain period” — refer to unstaking delay; translate as 출금 지연(언스테이킹 락업) to avoid implying immediate withdrawal.
+
+Keep the tone conversational-educational in Korean subtitles, but precise where technical distinctions matter.

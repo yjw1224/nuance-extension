@@ -1,0 +1,26 @@
+{
+  "name": "nuance-extension",
+  "version": "1.0.0",
+  "description": "유튜브 자막 '통역' 프로그램입니다.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yjw1224/nuance-extension.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/yjw1224/nuance-extension/issues"
+  },
+  "homepage": "https://github.com/yjw1224/nuance-extension#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "openai": "^6.44.0",
+    "youtube-transcript": "^1.3.1"
+  }
+}

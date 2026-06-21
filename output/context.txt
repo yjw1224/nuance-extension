@@ -1,41 +1,43 @@
 ### TOPIC
 
-* Main topic: K-Pop artists EJAE, Audrey Nuna, and Rei Ami receiving a platinum record award for their song "Golden"
-* Domain: Music industry, K-Pop
-* Tone: Celebratory, positive, promotional
+* Main topic: K-pop music achievement and artist recognition  
+* Domain: Korean pop music industry, music awards  
+* Tone: Celebratory, informative, enthusiastic
 
 ### KEY TERMS
 
-* EJAE
-* Audrey Nuna
-* Rei Ami
-* KPop Demon Hunters (likely a group or project name)
-* Platinum Record
-* "Golden" (song title)
+* EJAE  
+* Audrey Nuna  
+* Rei Ami  
+* KPop Demon Hunters (music group/project)  
+* Platinum Record  
+* "Golden" (song title)  
+* K-pop
 
 ### TERM DISAMBIGUATION
 
 Term: Platinum Record  
-Meaning in this video: Certification awarded for high sales/streaming milestones of a music release  
-Avoid: platinum as a metal or jewelry  
-Use: 플래티넘 레코드
+Meaning in this video: Music certification awarded for high sales/streaming of the song "Golden"  
+Avoid: platinum as a material or unrelated certifications  
+Use: 플래티넘 레코드 (음악 판매 인증)
 
-Term: Golden  
-Meaning in this video: Song title by EJAE, Audrey Nuna & Rei Ami  
-Avoid: general adjective meaning "gold색의"  
-Use: "Golden" (in quotes)
+Term: KPop Demon Hunters  
+Meaning in this video: Specific K-pop music group/project involving EJAE, Audrey Nuna, and Rei Ami  
+Avoid: literal demon hunters or unrelated media named similarly  
+Use: K팝 데몬 헌터즈 (그룹 이름)
 
 ### TRANSLATION RULES
 
-* Keep artist names and group/project names (EJAE, Audrey Nuna, Rei Ami, KPop Demon Hunters) untranslated.  
-* Keep the song title "Golden" in English and quotes to maintain proper noun status.  
-* Use established Korean music industry terms for awards/certifications (e.g., 플래티넘 레코드).  
-* Use natural, fluent Korean suitable for fan or music news contexts.
+* Keep all artist and group names (EJAE, Audrey Nuna, Rei Ami, KPop Demon Hunters) untranslated and written in English/Korean hybrid as above.  
+* Song title "Golden" should remain in English, in quotes, as the official title.  
+* Use standard Korean music industry terms for awards and music releases.  
+* Translate "Platinum Record" as 플래티넘 레코드 to reflect the music certification context.  
+* Maintain consistent terminology for all named entities throughout.
 
 ### STYLE GUIDE
 
 * -요  
-* Preferred register: polite but friendly, as appropriate for entertainment news or fan communications  
-* Preferred phrasing style: conversational yet respectful  
-* Avoid unnatural literal translations of idiomatic expressions or promotional slogans  
-* Prefer natural expressions commonly used in Korean entertainment media, e.g., “플래티넘 레코드를 수상해 깜짝 놀랐다” rather than overly formal or stiff wording
+* Preferred register: Polite and conversational, suitable for general audience and K-pop fans.  
+* Preferred phrasing style: Natural, fluid sentences avoiding overly formal or stiff expressions.  
+* Unnatural literal patterns to avoid: Do not translate artist/group names literally, avoid overly literal technical phrasing for awards.  
+* Natural expressions to prefer: Use common entertainment industry Korean phrases that reflect excitement and recognition.

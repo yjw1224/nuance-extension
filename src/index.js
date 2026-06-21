@@ -9,6 +9,8 @@ from "./translator.js";
 import { rebuildSentences }
 from "./sentenceRebuilder.js";
 
+import { alignTranslations } from "./alignment.js";
+
 // import {
 //   getVideoInfo
 // } from "./youtube.js";
@@ -127,10 +129,16 @@ async function main() {
     `TRANSLATION: ${translationTime}ms`
   );
 
+  const aligned =
+    alignTranslations(
+      translation,
+      rawSubtitles
+    );
+
   fs.writeFileSync(
     "./output/translation.json",
     JSON.stringify(
-      translation,
+      aligned,
       null,
       2
     )

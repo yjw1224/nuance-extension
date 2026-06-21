@@ -1,138 +1,232 @@
 import { openai } from "./openai.js";
 import { translateInto } from "../data/language.js";
 
-export async function translateTranscript(
-  transcriptSentence,
-  context
+function chunkArray(array, chunkSize = 10) {
+
+  const chunks = [];
+
+  for (
+    let i = 0;
+    i < array.length;
+    i += chunkSize
+  ) {
+    chunks.push(
+      array.slice(i, i + chunkSize)
+    );
+  }
+
+  return chunks;
+}
+
+async function translateChunk(
+  transcript,
+  context,
+  chunkIndex
 ) {
-    const transcriptText = transcriptSentence.join("\n");
+
+  const transcriptText =
+    transcript
+      .map(
+        sentence =>
+          `[${sentence.sentenceId}] ${sentence.text}`
+      )
+      .join("\n");
+
   const response =
     await openai.responses.create({
-      model: "gpt-5-mini",
+
+      model: "gpt-4.1-mini",
 
       input: `
-You are an elite ${translateInto} conference interpreter specializing in technology, business, education, media, and online content.
+You are a professional subtitle translator.
 
-Your job is NOT to translate subtitles literally.
+Use the Translation Context Memory below as the highest-priority reference.
 
-Your job is to help a ${translateInto} viewer understand the video as naturally and accurately as possible.
+Follow all terminology, style, disambiguation, and translation rules defined in the memory.
 
-Think like a professional interpreter, not a machine translator.
+Requirements:
 
-You have already been given a Translation Context Memory generated from the entire video.
+- Prioritize meaning over literal wording.
+- Use natural and native-sounding ${translateInto}.
+- Preserve intended meaning and tone.
+- Maintain terminology consistency throughout the video.
+- Adapt idioms and expressions naturally.
+- Keep company names, product names, and proper nouns unchanged when appropriate.
+- Translate every subtitle line.
+- Preserve subtitle order.
+- Do not omit information.
+- Do not add explanations or notes.
 
-This memory contains:
+IMPORTANT:
 
-* video topic
-* key entities
-* term disambiguation
-* translation rules
-* potential translation traps
-
-You must strictly follow that context.
-
----
-
-TRANSLATION CONTEXT MEMORY
-
-${context}
-
----
-
-YOUR OBJECTIVE
-
-Translate the subtitles into ${translateInto} so that a native ${translateInto} viewer can understand the speaker's intended meaning with minimal confusion.
-
-Prioritize:
-
-1. Meaning over wording
-2. Intent over literal translation
-3. Context over dictionary definitions
-4. Natural ${translateInto} over English sentence structure
-5. Consistency of terminology across the entire video
-
----
-
-TERM DISAMBIGUATION RULE
-
-When a word has multiple meanings, always use the meaning established in the Translation Context Memory.
-
-Never select a different interpretation unless the surrounding sentence clearly requires it.
+- Keep every ID exactly as provided.
+- Output one translated line for each input line.
+- Preserve all IDs.
+- Do not remove IDs.
+- Do not create new IDs.
+- Do not merge IDs.
+- Do not split IDs.
 
 Example:
 
-Agent → AI Agent
-not representative, salesperson, or secret agent
+[0] Hello world.
+[1] How are you?
 
-Memory → AI Memory
-not human memory
+↓
 
-Token → Crypto token
-not physical token
+[0] 안녕하세요.
+[1] 잘 지내시나요?
 
----
+Translation Context Memory:
 
-LOCALIZATION RULE
-
-Adapt expressions into natural ${translateInto}.
-
-Do not preserve English sentence structure if it sounds unnatural.
-
-Examples:
-
-"This changes everything."
-
-Bad:
-"이것은 모든 것을 바꾼다."
-
-Good:
-"이번 발표는 업계에 큰 변화를 가져올 수 있습니다."
-
----
-
-IDIOMS AND SLANG
-
-Interpret meaning rather than words.
-
-Examples:
-
-"He's cooking."
-→ "지금 엄청 잘하고 있다."
-
-"They are crushing it."
-→ "엄청난 성과를 내고 있다."
-
-Never translate idioms literally.
-
----
-
-TECHNICAL CONTENT
-
-When translating technical content:
-
-* prioritize accuracy
-* use terminology commonly used by ${translateInto} professionals
-* keep product names unchanged
-* keep company names unchanged
-* keep technical terms consistent
-
----
-
-OUTPUT REQUIREMENTS
-
-* Output only the ${translateInto} translation.
-* Preserve subtitle order.
-* Do not add explanations.
-* Do not add notes.
-* Do not summarize.
-* Translate every subtitle line.
-* Maintain readability for real-time subtitle viewing.
+${context}
 
 Subtitles:
 
 ${transcriptText}
+
+Output only the translation.
 `
     });
 
-  return response.output_text;
+  console.log(
+    `\n=== CHUNK ${chunkIndex + 1} ===`
+  );
+
+  console.log(
+    JSON.stringify(
+      response.usage,
+      null,
+      2
+    )
+  );
+
+  const translatedMap =
+    new Map();
+
+  const lines =
+    response.output_text
+      .split("\n")
+      .map(line => line.trim())
+      .filter(Boolean);
+
+  const idRegex =
+    /^\[(\d+)\]\s*(.*)$/;
+
+  for (const line of lines) {
+
+    const match =
+      line.match(idRegex);
+
+    if (!match) continue;
+
+    translatedMap.set(
+      Number(match[1]),
+      match[2]
+    );
+  }
+  // console.log(
+  //   "\n=== RAW GPT OUTPUT ===\n"
+  // );
+
+  // console.log(
+  //   response.output_text
+  // );
+
+  // 번호 누락 에러!
+  for (const sentence of transcript) {
+
+    if (
+      !translatedMap.has(
+        sentence.sentenceId
+      )
+    ) {
+      throw new Error(
+        `Missing translation for sentenceId ${sentence.sentenceId}`
+      );
+    }
+  }
+
+  if (
+    translatedMap.size !==
+    transcript.length
+  ) {
+
+    console.log(
+      "\n=== INPUT ===\n"
+    );
+
+    console.log(
+      transcript.map(
+        t =>
+          `[${t.sentenceId}] ${t.text}`
+      )
+    );
+
+    console.log(
+      "\n=== OUTPUT ===\n"
+    );
+
+    console.log(
+      response.output_text
+    );
+
+    throw new Error(
+      "Translation ID count mismatch"
+    );
+  }
+
+  return transcript.map(
+    sentence => ({
+
+      sentenceId:
+        sentence.sentenceId,
+
+      subtitleIds:
+        sentence.subtitleIds,
+
+      translatedText:
+        translatedMap.get(
+          sentence.sentenceId
+        )
+    })
+  );
+}
+
+export async function translateTranscript(
+  transcriptSentence,
+  context
+) {
+
+  const chunks =
+    chunkArray(
+      transcriptSentence,
+      12
+    );
+
+  console.log(
+    `\n총 ${chunks.length}개 청크로 분할`
+  );
+
+  console.log(
+    chunks.map(
+      chunk => chunk.length
+    )
+  );
+
+  const translations =
+    await Promise.all(
+
+      chunks.map(
+        (chunk, index) =>
+          translateChunk(
+            chunk,
+            context,
+            index
+          )
+      )
+
+    );
+
+  return translations.flat();
 }

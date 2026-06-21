@@ -1,140 +1,105 @@
-import fs from "fs";
-import path from "path";
-import { execSync } from "child_process";
+export async function getVideoInfo() {
 
-const TEMP_DIR = "./temp";
+  const playerResponse =
+    window.ytInitialPlayerResponse;
 
-function ensureTempDir() {
-  if (!fs.existsSync(TEMP_DIR)) {
-    fs.mkdirSync(TEMP_DIR);
-  }
-}
-
-function findLatestVttFile() {
-  const files = fs.readdirSync(TEMP_DIR);
-
-  const vtt = files.find(
-    file =>
-      file.endsWith(".en.vtt") ||
-      file.endsWith(".en-US.vtt")
-  );
-
-  return vtt
-    ? path.join(TEMP_DIR, vtt)
-    : null;
-}
-
-function parseVtt(vttContent) {
-  const lines = vttContent.split("\n");
-
-  const transcript = [];
-
-  let currentTime = null;
-
-  for (const line of lines) {
-
-    const trimmed = line.trim();
-
-    if (
-      trimmed.includes("-->")
-    ) {
-      currentTime = trimmed;
-      continue;
-    }
-
-    if (
-      !trimmed ||
-      trimmed.startsWith("WEBVTT")
-    ) {
-      continue;
-    }
-
-    transcript.push({
-      time: currentTime,
-      text: trimmed
-    });
+  if (!playerResponse) {
+    throw new Error(
+      "ytInitialPlayerResponse를 찾을 수 없습니다."
+    );
   }
 
-  return transcript;
-}
+  const title =
+    playerResponse.videoDetails?.title ??
+    "Unknown Title";
 
-export async function getVideoInfo(url) {
+  const channel =
+    playerResponse.videoDetails?.author ??
+    "Unknown Channel";
 
-  ensureTempDir();
+  const tracks =
+    playerResponse.captions
+      ?.playerCaptionsTracklistRenderer
+      ?.captionTracks;
 
-  try {
+  if (!tracks?.length) {
+    throw new Error(
+      "자막 트랙을 찾을 수 없습니다."
+    );
+  }
 
-    // 제목
-    const title = execSync(
-      `yt-dlp --print title "${url}"`,
-      { encoding: "utf8" }
-    ).trim();
-
-    // 채널명
-    const channel = execSync(
-      `yt-dlp --print channel "${url}"`,
-      { encoding: "utf8" }
-    ).trim();
-
-    // 기존 vtt 제거
-    fs.readdirSync(TEMP_DIR)
-      .forEach(file => {
-        if (file.endsWith(".vtt")) {
-          fs.unlinkSync(
-            path.join(TEMP_DIR, file)
-          );
-        }
-      });
-
-    // 영어 자동자막 다운로드
-    execSync(
-      `
-      yt-dlp \
-      --write-auto-subs \
-      --sub-lang en \
-      --skip-download \
-      --js-runtimes node \
-      -o "${TEMP_DIR}/%(id)s.%(ext)s" \
-      "${url}"
-      `,
-      {
-        stdio: "ignore"
-      }
+  // 영어 자막 우선
+  let track =
+    tracks.find(
+      t => t.languageCode === "en"
     );
 
-    const vttPath =
-      findLatestVttFile();
+  if (!track) {
+    track = tracks[0];
+  }
 
-    if (!vttPath) {
+  let subtitleUrl =
+    track.baseUrl;
 
-      return {
-        title,
-        channel,
-        transcript: []
-      };
-    }
+  if (!subtitleUrl.includes("fmt=json3")) {
+    subtitleUrl += "&fmt=json3";
+  }
 
-    const vttContent =
-      fs.readFileSync(
-        vttPath,
-        "utf8"
+  const response =
+    await fetch(subtitleUrl);
+
+  if (!response.ok) {
+    throw new Error(
+      `자막 다운로드 실패 (${response.status})`
+    );
+  }
+
+  const json =
+    await response.json();
+
+  const subtitles =
+    (json.events ?? [])
+
+      .filter(
+        event =>
+          event.segs &&
+          event.segs.length
+      )
+
+      .map(event => ({
+
+        start:
+          event.tStartMs,
+
+        duration:
+          event.dDurationMs,
+
+        text:
+          event.segs
+            .map(
+              seg => seg.utf8
+            )
+            .join("")
+            .replace(
+              /\n/g,
+              " "
+            )
+            .trim()
+
+      }))
+
+      .filter(
+        subtitle =>
+          subtitle.text.length
       );
 
-    const transcript =
-      parseVtt(vttContent);
+  return {
 
-    return {
-      title,
-      channel,
-      transcript
-    };
+    title,
 
-  } catch (error) {
+    channel,
 
-    console.error(error);
+    subtitles
 
-    throw new Error(
-      "유튜브 정보를 가져오지 못했습니다."
-    );
-  }
+  };
 }

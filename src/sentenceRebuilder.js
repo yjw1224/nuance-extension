@@ -1,22 +1,20 @@
 export function rebuildSentences(lines) {
 
-  if (typeof lines === "string") {
-    lines = lines
-      .split("\n")
-      .filter(Boolean);
-  }
-
   const sentences = [];
 
   let buffer = "";
+  let subtitleIds = [];
+  let sentenceId = 0;
 
   const endRegex = /[.?!]$/;
 
   for (const line of lines) {
 
-    const cleaned = line.trim();
+    const cleaned = line.text.trim();
 
     if (!cleaned) continue;
+
+    subtitleIds.push(line.id);
 
     if (buffer) {
       buffer += " " + cleaned;
@@ -25,13 +23,24 @@ export function rebuildSentences(lines) {
     }
 
     if (endRegex.test(cleaned)) {
-      sentences.push(buffer);
+      sentences.push({
+        sentenceId,
+        text: buffer,
+        subtitleIds
+      });
+
+      sentenceId++;
       buffer = "";
+      subtitleIds = [];
     }
   }
 
   if (buffer) {
-    sentences.push(buffer);
+    sentences.push({
+      sentenceId,
+      text: buffer,
+      subtitleIds
+    });
   }
 
   return sentences;

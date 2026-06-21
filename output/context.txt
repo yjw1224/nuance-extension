@@ -1,62 +1,41 @@
-VIDEO BRIEF
-- What is the video primarily about?
-  - A famous dialogue from The Matrix where Morpheus offers Neo a choice between two pills (blue/red) that symbolize either staying in illusion or learning the truth. Key themes: reality vs. illusion, choice, awakening.
-- Domain: film / entertainment / sci‑fi; heavy pop‑culture references.
-- Overall tone: dramatic, philosophical, persuasive, authoritative.
+### TOPIC
 
-KEY ENTITIES
-- Neo (네오) — protagonist being addressed.
-- Morpheus (모피어스) — speaker (do not rename).
-- The Matrix — simulated reality / system of control.
-- Blue pill / Red pill — decisive symbolic choice (illusion vs. truth).
-- Wonderland / rabbit hole — Alice in Wonderland metaphor for exploring reality.
+* Main topic: K-Pop artists EJAE, Audrey Nuna, and Rei Ami receiving a platinum record award for their song "Golden"
+* Domain: Music industry, K-Pop
+* Tone: Celebratory, positive, promotional
 
-TERM DISAMBIGUATION
-- Term: The Matrix
-  - Meaning in this video: a simulated, hidden reality that controls humanity.
-  - Incorrect: a computer program in purely technical sense; a data structure.
-  - Recommended Korean interpretation: 더 매트릭스 or 매트릭스 (영어명 유지), 설명 시 “매트릭스(가짜 현실/시뮬레이션)”.
-- Term: Blue pill / Red pill
-  - Meaning: metaphors for choosing comfortable ignorance (blue) vs. harsh reality/knowledge (red).
-  - Incorrect: literal pharmaceutical, medical choice, or neutral pills.
-  - Recommended Korean: 파란 약(파란 알약) / 빨간 약(빨간 알약). Keep consistent and explicitly symbolic.
-- Term: Wonderland
-  - Meaning: metaphorical reference to "Alice in Wonderland" — a strange alternate world.
-  - Incorrect: literal theme park or generic “wonderland” cheeriness.
-  - Recommended Korean: 원더랜드 (혹은 ‘이상한 나라’ 보조 표기) — keep as literary reference.
-- Term: rabbit hole
-  - Meaning: metaphor for diving deep into hidden layers of reality.
-  - Incorrect: literal animal burrow only.
-  - Recommended Korean: 토끼굴 / 토끼굴의 깊이 (metaphorical).
-- Term: slave / bondage / prison (for your mind)
-  - Meaning: psychological/mental enslavement by the system.
-  - Incorrect: physical slavery or incarceration.
-  - Recommended Korean: 정신적 감금·노예 상태 / 마음의 감옥.
+### KEY TERMS
 
-TRANSLATION RULES
-- Keep character names (Neo, Morpheus) in their standard Korean forms: 네오, 모피어스.
-- Translate “blue pill / red pill” as 파란 약(파란 알약) / 빨간 약(빨간 알약). Use the word “약” or “알약” consistently.
-- Render “The Matrix” as 매트릭스 (explain with parenthetical descriptor once if necessary: 매트릭스(가짜 현실)).
-- Prefer natural Korean phrasing over literal sentence order. Preserve meaning, tone, and rhetorical cadence.
-- Maintain short, punchy sentences to match original pauses; mirror ellipses and line breaks to keep dramatic timing.
-- Avoid literal translation of sensory verbs used metaphorically (“smell, taste, touch”) — convey that senses cannot detect this prison: “냄새 맡을 수도, 맛볼 수도, 만질 수도 없는”.
-- Keep metaphors (Wonderland, rabbit hole) translated as metaphors, not explained away; don’t translate “rabbit hole” literally in a way that loses figurative sense.
-- Consistently render “truth” as 진실 (or ‘진실’ contextually) when referring to reality; avoid weaker words like “사실” unless contextually appropriate.
+* EJAE
+* Audrey Nuna
+* Rei Ami
+* KPop Demon Hunters (likely a group or project name)
+* Platinum Record
+* "Golden" (song title)
 
-POTENTIAL TRAPS
-- “go to the work” — transcript typo; should be “go to work” meaning daily routine/commute. Translate as 출근하거나/일하러 갈 때.
-- “It is all around us / even now, in this very room” — implies ubiquity of simulation; avoid translating as mere location detail. Emphasize pervasiveness.
-- “You have to see it for yourself” — “see” = perceive/experience, not literally view. Translate as “직접 봐야만 한다 / 직접 체험해야 한다.”
-- “Wonderland” and “rabbit hole” are literary references; keep their metaphorical resonance.
-- “All I am offering is the truth, nothing more” — rhetorical minimalist promise; translate to maintain stark brevity.
-- Tone of address shifts: instructional → urgent → comforting. Maintain appropriate intensity changes.
+### TERM DISAMBIGUATION
 
-NATIVE STYLE GUIDE
-- Register: plain declarative style (-다) for dramatic weight and timelessness. Use no honorifics; address directly (네오/너).
-- Sentence endings: use short, blunt sentences and imperatives where original is commanding (“Follow me.” → “따라와.” or “따라와라.” Prefer “따라와.” for cinematic force).
-- Preferred phrasing: natural colloquial Korean that sounds spoken, not literal. E.g.:
-  - “You are a slave, Neo.” → “네오, 너는 노예다.”
-  - “a prison for your mind” → “네 마음을 가둔 감옥이다” or “마음의 감옥이다.”
-- Avoid English-like passives and over-literal connectors. Use Korean rhythm: subject/topic omission when natural.
-- Preserve pauses with short lines and ellipses to mirror cadence.
-- Tone consistency: authoritative, slightly ominous; translations should feel serious and weighty, not academic.
+Term: Platinum Record  
+Meaning in this video: Certification awarded for high sales/streaming milestones of a music release  
+Avoid: platinum as a metal or jewelry  
+Use: 플래티넘 레코드
+
+Term: Golden  
+Meaning in this video: Song title by EJAE, Audrey Nuna & Rei Ami  
+Avoid: general adjective meaning "gold색의"  
+Use: "Golden" (in quotes)
+
+### TRANSLATION RULES
+
+* Keep artist names and group/project names (EJAE, Audrey Nuna, Rei Ami, KPop Demon Hunters) untranslated.  
+* Keep the song title "Golden" in English and quotes to maintain proper noun status.  
+* Use established Korean music industry terms for awards/certifications (e.g., 플래티넘 레코드).  
+* Use natural, fluent Korean suitable for fan or music news contexts.
+
+### STYLE GUIDE
+
+* -요  
+* Preferred register: polite but friendly, as appropriate for entertainment news or fan communications  
+* Preferred phrasing style: conversational yet respectful  
+* Avoid unnatural literal translations of idiomatic expressions or promotional slogans  
+* Prefer natural expressions commonly used in Korean entertainment media, e.g., “플래티넘 레코드를 수상해 깜짝 놀랐다” rather than overly formal or stiff wording

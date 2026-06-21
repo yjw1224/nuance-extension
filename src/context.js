@@ -5,6 +5,7 @@ export async function generateContext(
   transcriptSentence
 ) {
     const transcriptText = transcriptSentence.join("\n");
+    const videoTitle = "Blue Pill or Red Pill - The Matrix (2/9) Movie CLIP (1999) HD";
   const response =
     await openai.responses.create({
       model: "gpt-5-mini",
@@ -33,6 +34,17 @@ Your output must contain the following sections.
 VIDEO BRIEF
 
 * What is the video primarily about?
+The video title provides important context.
+
+Use it when determining:
+
+- topic
+- terminology
+- domain
+- intended meaning of ambiguous terms
+
+Do not rely on transcript alone.
+
 * What domain does it belong to?
   (technology, AI, investing, crypto, business, science, gaming, entertainment, politics, education, etc.)
 * What is the overall tone?
@@ -180,6 +192,10 @@ OUTPUT REQUIREMENTS
 * Do not explain your reasoning process.
 * Produce a translator briefing, not a viewer summary.
 * Maximum 600 words.
+
+Video Title:
+
+${videoTitle}
 
 Transcript:
 

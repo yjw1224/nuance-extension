@@ -1,68 +1,62 @@
 VIDEO BRIEF
 - What is the video primarily about?
-  - A European heatwave: UK Met Office warnings and rising high temperatures across Spain, France, Italy, Portugal, Germany; local responses like heat shelters and public advice.
-- Domain:
-  - Weather / current affairs (climate/health impacts).
-- Overall tone:
-  - Newsy, conversational reporting (on-the-ground correspondent), mildly advisory.
+  - A famous dialogue from The Matrix where Morpheus offers Neo a choice between two pills (blue/red) that symbolize either staying in illusion or learning the truth. Key themes: reality vs. illusion, choice, awakening.
+- Domain: film / entertainment / sci‑fi; heavy pop‑culture references.
+- Overall tone: dramatic, philosophical, persuasive, authoritative.
 
 KEY ENTITIES
-- Met Office (UK meteorological agency)
-- Paris, Florence (피렌체), Madrid (마드리드)
-- Spain (스페인), Portugal (포르투갈), France (프랑스), Italy (이탈리아), Germany (독일)
-- Guadalquivir Valley (과달키비르 계곡) — speaker mispronounced as "Guadal Kir Valley"
-- Basque Country (바스크 지방) — transcript "Bas country"
-- Heat shelters / public cooling spaces (도서관·체육관 등)
-- Correspondent: Guy Hedgeko (transcript) — name may be slightly misspelt; treat as proper name and keep original spelling if unsure
+- Neo (네오) — protagonist being addressed.
+- Morpheus (모피어스) — speaker (do not rename).
+- The Matrix — simulated reality / system of control.
+- Blue pill / Red pill — decisive symbolic choice (illusion vs. truth).
+- Wonderland / rabbit hole — Alice in Wonderland metaphor for exploring reality.
 
 TERM DISAMBIGUATION
-- Term: Amber extreme heat warning
-  - Meaning in this video: UK Met Office's second-highest heat warning (significant risk to health/disruption).
-  - Incorrect interpretations: literal color only, decorative term.
-  - Recommended Korean interpretation: 주황색(Amber) 폭염 경보 (또는 "주황 경보(Amber)")
-- Term: Red heat alert
-  - Meaning: highest-level heat warning (심각한 위험).
-  - Incorrect: any non-urgent meaning.
-  - Recommended: 적색(Red) 폭염 경보
-- Term: High pressure
-  - Meaning: meteorological high-pressure system causing clear, hot conditions.
-  - Incorrect: physical pressure/weight.
-  - Recommended: 고기압
-- Term: Gusts from Africa
-  - Meaning: warm air mass/heat surge originating in North Africa/Sahara.
-  - Incorrect: wind gusts carrying sand only.
-  - Recommended: 아프리카발 더운 공기 / 사하라발 열풍
-- Term: Heat wave
-  - Meaning: sustained period of unusually high temperatures (health risk).
-  - Incorrect: one-off hot day or metaphorical heat.
-  - Recommended: 폭염 / 폭염(heat wave)
-- Term: Heat shelters
-  - Meaning: public, air-conditioned places set up for people to escape heat.
-  - Incorrect: emergency shelters for disasters only.
-  - Recommended: 폭염 대피소 / 냉방 제공 공공시설 (예: 도서관·체육관)
-- Term: High30s / up to 35° / 45°
-  - Meaning: temperatures in degrees Celsius.
-  - Incorrect: Fahrenheit, vague "high".
-  - Recommended: 표기: 35°C, 39°C 등(섭씨 표시). "high 30s" → "30도대 후반(약 37~39°C)"
-- Term: Siesta
-  - Meaning: midday/early afternoon rest habit in Spain (cultural reference).
-  - Incorrect: literal nap only, ignore time-of-day context.
-  - Recommended: 시에스타(정오·한낮 휴식 문화)
+- Term: The Matrix
+  - Meaning in this video: a simulated, hidden reality that controls humanity.
+  - Incorrect: a computer program in purely technical sense; a data structure.
+  - Recommended Korean interpretation: 더 매트릭스 or 매트릭스 (영어명 유지), 설명 시 “매트릭스(가짜 현실/시뮬레이션)”.
+- Term: Blue pill / Red pill
+  - Meaning: metaphors for choosing comfortable ignorance (blue) vs. harsh reality/knowledge (red).
+  - Incorrect: literal pharmaceutical, medical choice, or neutral pills.
+  - Recommended Korean: 파란 약(파란 알약) / 빨간 약(빨간 알약). Keep consistent and explicitly symbolic.
+- Term: Wonderland
+  - Meaning: metaphorical reference to "Alice in Wonderland" — a strange alternate world.
+  - Incorrect: literal theme park or generic “wonderland” cheeriness.
+  - Recommended Korean: 원더랜드 (혹은 ‘이상한 나라’ 보조 표기) — keep as literary reference.
+- Term: rabbit hole
+  - Meaning: metaphor for diving deep into hidden layers of reality.
+  - Incorrect: literal animal burrow only.
+  - Recommended Korean: 토끼굴 / 토끼굴의 깊이 (metaphorical).
+- Term: slave / bondage / prison (for your mind)
+  - Meaning: psychological/mental enslavement by the system.
+  - Incorrect: physical slavery or incarceration.
+  - Recommended Korean: 정신적 감금·노예 상태 / 마음의 감옥.
 
 TRANSLATION RULES
-- Keep official agency names recognisable: Met Office → 영국 기상청(Met Office).
-- Preserve Celsius units and numerals exactly (e.g., 35°C, 45°C); add "섭씨" only if needed for clarity.
-- Render warning levels explicitly: use both Korean color term and English label in parentheses on first mention (예: 주황색(Amber) 경보, 적색(Red) 경보).
-- Translate meteorological terms with standard Korean jargon: high pressure → 고기압; heat wave → 폭염; gusts from Africa → 아프리카발 열풍/따뜻한 공기.
-- Convert vague spoken ranges into clear Korean equivalents: "high 30s" → "30도대 후반(약 37~39°C)"; "around 42 degrees" → "약 42°C".
-- Correct obvious place-name mistranscriptions: "Guadal Kir Valley" → 과달키비르 계곡; "Bas country" → 바스크 지방. Only correct if familiar/common form; otherwise keep original and flag uncertainty.
-- Translate "heat shelters" as 폭염 대피소/냉방 제공 공공시설 (give examples: 도서관, 체육관).
-- Maintain reporter's conversational tone but prefer concise, natural Korean phrasing; avoid literal word-for-word.
+- Keep character names (Neo, Morpheus) in their standard Korean forms: 네오, 모피어스.
+- Translate “blue pill / red pill” as 파란 약(파란 알약) / 빨간 약(빨간 알약). Use the word “약” or “알약” consistently.
+- Render “The Matrix” as 매트릭스 (explain with parenthetical descriptor once if necessary: 매트릭스(가짜 현실)).
+- Prefer natural Korean phrasing over literal sentence order. Preserve meaning, tone, and rhetorical cadence.
+- Maintain short, punchy sentences to match original pauses; mirror ellipses and line breaks to keep dramatic timing.
+- Avoid literal translation of sensory verbs used metaphorically (“smell, taste, touch”) — convey that senses cannot detect this prison: “냄새 맡을 수도, 맛볼 수도, 만질 수도 없는”.
+- Keep metaphors (Wonderland, rabbit hole) translated as metaphors, not explained away; don’t translate “rabbit hole” literally in a way that loses figurative sense.
+- Consistently render “truth” as 진실 (or ‘진실’ contextually) when referring to reality; avoid weaker words like “사실” unless contextually appropriate.
 
 POTENTIAL TRAPS
-- "Amber" and "Red" are technical warning levels, not casual color mentions — convert to 경보 수준.
-- "Drive up temperatures" = cause/lead to higher temperatures (고기압이 기온을 끌어올린다), not physical "driving."
-- "Gusts from Africa" could be misread as sandstorms; here it means hot air masses from North Africa/Sahara.
-- "Siesta" implies cultural adaptation to heat (midday rest) — translate as explanation, not just "낮잠."
-- Times: "mid to late afternoon between 5 and 7 in the evening" — map to "보통 오후 5시~7시경(늦은 오후~이른 저녁)".
-- Speaker name and some place names are slightly garbled in transcript — do not invent corrected personal names; correct place-names only if standard (과달키비르, 바스크). If uncertain, keep original and flag.
+- “go to the work” — transcript typo; should be “go to work” meaning daily routine/commute. Translate as 출근하거나/일하러 갈 때.
+- “It is all around us / even now, in this very room” — implies ubiquity of simulation; avoid translating as mere location detail. Emphasize pervasiveness.
+- “You have to see it for yourself” — “see” = perceive/experience, not literally view. Translate as “직접 봐야만 한다 / 직접 체험해야 한다.”
+- “Wonderland” and “rabbit hole” are literary references; keep their metaphorical resonance.
+- “All I am offering is the truth, nothing more” — rhetorical minimalist promise; translate to maintain stark brevity.
+- Tone of address shifts: instructional → urgent → comforting. Maintain appropriate intensity changes.
+
+NATIVE STYLE GUIDE
+- Register: plain declarative style (-다) for dramatic weight and timelessness. Use no honorifics; address directly (네오/너).
+- Sentence endings: use short, blunt sentences and imperatives where original is commanding (“Follow me.” → “따라와.” or “따라와라.” Prefer “따라와.” for cinematic force).
+- Preferred phrasing: natural colloquial Korean that sounds spoken, not literal. E.g.:
+  - “You are a slave, Neo.” → “네오, 너는 노예다.”
+  - “a prison for your mind” → “네 마음을 가둔 감옥이다” or “마음의 감옥이다.”
+- Avoid English-like passives and over-literal connectors. Use Korean rhythm: subject/topic omission when natural.
+- Preserve pauses with short lines and ellipses to mirror cadence.
+- Tone consistency: authoritative, slightly ominous; translations should feel serious and weighty, not academic.

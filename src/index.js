@@ -9,19 +9,33 @@ from "./translator.js";
 import {rebuildSentences}
 from "./sentenceRebuilder.js";
 
+// import {
+//   getVideoInfo
+// } from "./youtube.js";
+
 async function main() {
 
-  const transcript =
-    rebuildSentences(fs.readFileSync(
+  const videoData = {
+    url: "https://www.youtube.com/watch?v=MBRqu0YOH14&pp=ygUW64KZ6rSA7KCBIO2XiOustOyjvOydmA%3D%3D",
+    title: "낙관적 허무주의",
+    channel: 'Kurzgesagt - In a Nutshell',
+    transcript: rebuildSentences(fs.readFileSync(
       "./data/script.txt",
       "utf8"
-    ));
+    ))
+  };
+
+  console.log("\n=== 제목 ===\n");
+  console.log(videoData.title);
+
+  console.log("\n=== 채널명 ===\n");
+  console.log(videoData.channel);
 
   console.log(
     "\n=== 원본 자막 ===\n"
   );
 
-  console.log(transcript);
+  console.log(videoData.transcript);
 
   console.log(
     "\n=== 컨텍스트 생성 중 ===\n"
@@ -29,7 +43,7 @@ async function main() {
 
   const context =
     await generateContext(
-      transcript
+      videoData.transcript
     );
 
   console.log(context);
@@ -45,7 +59,7 @@ async function main() {
 
   const translation =
     await translateTranscript(
-      transcript,
+      videoData.transcript,
       context
     );
 

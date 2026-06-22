@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Nuance",
+  "version": "0.1",
+  
+  "permissions": [
+    "webRequest"
+  ],
+  "host_permissions": [
+    "*://*.youtube.com/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": ["styles.css"]
+    }
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "translation.json"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

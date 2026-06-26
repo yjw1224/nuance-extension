@@ -11,25 +11,77 @@ chrome.webRequest.onCompleted.addListener(
 
     // timedtext만 허용
     if (
-      !details.url.includes(
-        "/api/timedtext"
-      )
+      !details.url.includes("/api/timedtext")
     ) {
       return;
     }
 
     // 영어 자막만 허용
-    // 영어
-    // 영어(자동 생성됨)
+    // (영어 + 영어(자동 생성))
     if (
-      !details.url.includes(
-        "lang=en"
-      )
+      !details.url.includes("lang=en")
     ) {
       return;
     }
 
-    subtitleLoaded = true;
+    try {
+
+      const response =
+        await fetch(details.url);
+
+      const subtitleJson =
+        await response.json();
+
+      // 실제 영어 자막인지 확인
+      const firstText =
+        subtitleJson.events
+          ?.find(event => event.segs)
+          ?.segs?.[0]?.utf8 ?? "";
+
+      if (
+        !/[A-Za-z]/.test(firstText)
+      ) {
+        return;
+      }
+
+      // 여기서 성공했을 때만 중복 방지
+      subtitleLoaded = true;
+
+      console.log(
+        "\n=== ENGLISH TIMEDTEXT FOUND ===\n"
+      );
+
+      console.log(details.url);
+
+      console.log(
+        "\n=== SUBTITLE JSON ===\n"
+      );
+
+      console.log(subtitleJson);
+
+      chrome.tabs.sendMessage(
+        details.tabId,
+        {
+          type:
+            "NUANCE_SUBTITLE_JSON",
+
+          subtitleJson
+        }
+      );
+
+      console.log("sent");
+
+    } catch (error) {
+
+      console.error(
+        "\n=== SUBTITLE FETCH FAILED ===\n"
+      );
+
+      console.error(error);
+
+      subtitleLoaded = false;
+
+    }
 
     try {
 

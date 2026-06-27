@@ -28,6 +28,7 @@ async function translateChunk(
     JSON.stringify(
 
       transcript.map(
+
         sentence => ({
 
           sentenceId:
@@ -50,31 +51,25 @@ async function translateChunk(
 
       model: process.env.OPENAI_MODEL,
 
+      temperature: 0,
+
       input: `
-You are a professional subtitle translator.
+      You are a professional subtitle translator.
 
-Use the Translation Context Memory below as the highest-priority reference.
+Translate every subtitle into natural ${translateInto}.
 
-Follow all terminology, style, disambiguation, and translation rules defined in the memory.
+Use the Translation Context Memory as the highest-priority reference for terminology, style and disambiguation.
 
-Requirements:
+Rules:
 
-- Prioritize meaning over literal wording.
-- Use natural and native-sounding ${translateInto}.
-- Preserve intended meaning and tone.
-- Maintain terminology consistency throughout the video.
-- Adapt idioms and expressions naturally.
-- Keep company names, product names, and proper nouns unchanged when appropriate.
-- Translate every subtitle line.
-- Preserve subtitle order.
-- Do not omit information.
-- Do not add explanations or notes.
+- Preserve meaning and tone.
+- Do not omit, merge or split subtitles.
+- If a subtitle is incomplete, translate it as-is.
+- Keep every sentenceId unchanged.
+- Translate only the text.
+- Keep proper nouns when appropriate.
 
-IMPORTANT:
-
-Return ONLY a valid JSON array.
-
-Format:
+Return ONLY this JSON array:
 
 [
   {
@@ -83,14 +78,8 @@ Format:
   }
 ]
 
-Rules:
-
-- Return ONLY JSON.
-- No markdown.
-- No explanation.
-- No extra text.
-- Keep every sentenceId exactly.
-- Return exactly one object per input subtitle.
+The number of output objects MUST equal the number of input objects.
+Every input sentenceId MUST appear exactly once.
 
 Translation Context Memory:
 
@@ -98,8 +87,7 @@ ${context}
 
 Subtitles:
 
-${transcriptText}
-`
+${transcriptText}`
     });
 
   console.log(
@@ -143,26 +131,46 @@ ${transcriptText}
 
   const translatedMap =
   new Map(
-    translated.map(
-      item => [
-        item.sentenceId,
-        item.translatedText
-      ]
-    )
+    translated.map(item => [
+      Number(item.sentenceId),
+      item.translatedText
+    ])
   );
 
   // 번호 누락 에러!
   for (const sentence of transcript) {
 
-    if (
-      !translatedMap.has(
-        sentence.sentenceId
-      )
-    ) {
-      throw new Error(
-        `Missing translation for sentenceId ${sentence.sentenceId}`
+    if (!translatedMap.has(sentence.sentenceId)) {
+
+      console.log(
+        `Retry sentenceId ${sentence.sentenceId}`
       );
+
+      try {
+
+        const retry =
+          await translateOneSubtitle(
+            sentence,
+            context
+          );
+
+        translatedMap.set(
+          Number(retry.sentenceId),
+          retry.translatedText
+        );
+
+      }
+
+      catch {
+
+        throw new Error(
+          `Retry failed for sentenceId ${sentence.sentenceId}`
+        );
+
+      }
+
     }
+
   }
 
   if (
@@ -225,6 +233,52 @@ ${transcriptText}
       response.usage
 
   };
+}
+
+async function translateOneSubtitle(
+  sentence,
+  context
+) {
+
+  const response =
+    await openai.responses.create({
+
+      model: process.env.OPENAI_MODEL,
+
+      temperature: 0,
+
+      input: `
+You are a professional subtitle translator.
+
+Translate this subtitle into natural ${translateInto}.
+
+Use the Translation Context Memory.
+
+Return ONLY JSON.
+
+{
+  "sentenceId": ${sentence.sentenceId},
+  "translatedText": "..."
+}
+
+Translation Context Memory:
+
+${context}
+
+Subtitle:
+
+${JSON.stringify({
+  sentenceId: sentence.sentenceId,
+  text: sentence.text
+})}
+`
+
+    });
+
+  return JSON.parse(
+    response.output_text
+  );
+
 }
 
 export async function translateTranscript(

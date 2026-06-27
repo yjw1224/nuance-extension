@@ -25,8 +25,6 @@ chrome.webRequest.onCompleted.addListener(
 
     try {
 
-      console.count("TIMEDTEXT");
-
       const response =
         await fetch(details.url);
 

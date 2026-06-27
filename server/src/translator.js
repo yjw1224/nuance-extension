@@ -25,12 +25,25 @@ async function translateChunk(
 ) {
 
   const transcriptText =
-    transcript
-      .map(
-        sentence =>
-          `[${sentence.sentenceId}] ${sentence.text}`
-      )
-      .join("\n");
+    JSON.stringify(
+
+      transcript.map(
+        sentence => ({
+
+          sentenceId:
+            sentence.sentenceId,
+
+          text:
+            sentence.text
+
+        })
+      ),
+
+      null,
+
+      2
+
+    );
 
   const response =
     await openai.responses.create({
@@ -59,23 +72,25 @@ Requirements:
 
 IMPORTANT:
 
-- Keep every ID exactly as provided.
-- Output one translated line for each input line.
-- Preserve all IDs.
-- Do not remove IDs.
-- Do not create new IDs.
-- Do not merge IDs.
-- Do not split IDs.
+Return ONLY a valid JSON array.
 
-Example:
+Format:
 
-[0] Hello world.
-[1] How are you?
+[
+  {
+    "sentenceId": 0,
+    "translatedText": "..."
+  }
+]
 
-↓
+Rules:
 
-[0] 안녕하세요.
-[1] 잘 지내시나요?
+- Return ONLY JSON.
+- No markdown.
+- No explanation.
+- No extra text.
+- Keep every sentenceId exactly.
+- Return exactly one object per input subtitle.
 
 Translation Context Memory:
 
@@ -84,8 +99,6 @@ ${context}
 Subtitles:
 
 ${transcriptText}
-
-Output only the translation.
 `
     });
 
@@ -100,38 +113,43 @@ Output only the translation.
       2
     )
   );
+  
+  let translated;
+
+  try {
+
+    translated =
+      JSON.parse(
+        response.output_text
+      );
+
+  }
+
+  catch (error) {
+
+    console.log(
+      "\n=== RAW GPT OUTPUT ===\n"
+    );
+
+    console.log(
+      response.output_text
+    );
+
+    throw new Error(
+      "Invalid JSON from GPT"
+    );
+
+  }
 
   const translatedMap =
-    new Map();
-
-  const lines =
-    response.output_text
-      .split("\n")
-      .map(line => line.trim())
-      .filter(Boolean);
-
-  const idRegex =
-    /^\[(\d+)\]\s*(.*)$/;
-
-  for (const line of lines) {
-
-    const match =
-      line.match(idRegex);
-
-    if (!match) continue;
-
-    translatedMap.set(
-      Number(match[1]),
-      match[2]
-    );
-  }
-  // console.log(
-  //   "\n=== RAW GPT OUTPUT ===\n"
-  // );
-
-  // console.log(
-  //   response.output_text
-  // );
+  new Map(
+    translated.map(
+      item => [
+        item.sentenceId,
+        item.translatedText
+      ]
+    )
+  );
 
   // 번호 누락 에러!
   for (const sentence of transcript) {

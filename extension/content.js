@@ -3,20 +3,6 @@ const font = new FontFace(
   `url(${chrome.runtime.getURL("fonts/Pretendard-Regular.woff2")})`
 );
 
-async function loadSubtitles() {
-
-  const url =
-    chrome.runtime.getURL(
-      "output/translation.json"
-    );
-    console.log(url)
-
-  const response =
-    await fetch(url);
-
-  return response.json();
-}
-
 const box =
   document.createElement("div");
 
@@ -27,18 +13,6 @@ document.body.append(box);
 
 let subtitles = [];
 
-loadSubtitles()
-  .then(data => {
-
-    subtitles = data;
-
-    console.log(
-      "Nuance subtitles loaded:",
-      subtitles.length
-    );
-
-  });
-
 setInterval(() => {
 
   const video =
@@ -46,6 +20,7 @@ setInterval(() => {
 
   if (
     !video ||
+    !Array.isArray(subtitles) ||
     subtitles.length === 0
   ) {
     return;
@@ -171,6 +146,8 @@ chrome.runtime.onMessage.addListener(
 
       const result =
         await response.json();
+
+      console.log(result);
 
       subtitles =
         result.translation;

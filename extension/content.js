@@ -1,3 +1,15 @@
+const script =
+  document.createElement("script");
+
+script.src =
+  chrome.runtime.getURL("inject.js");
+
+(document.head || document.documentElement)
+  .appendChild(script);
+
+script.onload =
+  () => script.remove();
+
 const font = new FontFace(
   "Pretendard",
   `url(${chrome.runtime.getURL("fonts/Pretendard-Regular.woff2")})`
@@ -13,6 +25,44 @@ document.body.append(box);
 
 let subtitles = [];
 
+let translated = false;
+
+let currentVideoId =
+  new URLSearchParams(
+    location.search
+  ).get("v");
+
+// 영상 변경 감지
+setInterval(() => {
+
+  const videoId =
+    new URLSearchParams(
+      location.search
+    ).get("v");
+
+  if (
+    videoId &&
+    videoId !== currentVideoId
+  ) {
+
+    currentVideoId = videoId;
+
+    translated = false;
+
+    subtitles = [];
+
+    box.textContent = "";
+
+    console.log(
+      "Video changed:",
+      videoId
+    );
+
+  }
+
+}, 500);
+
+// 자막 표시
 setInterval(() => {
 
   const video =
@@ -46,14 +96,16 @@ setInterval(() => {
 
 }, 100);
 
-let translated = false;
+window.addEventListener("message", async event => {
 
-chrome.runtime.onMessage.addListener(
-  async message => {
-    console.count("CONTENT MESSAGE");
+    if (
+      event.source !== window
+    ) {
+      return;
+    }
 
-    if(translated) return;
-    translated = true;
+    const message =
+      event.data;
 
     if (
       message.type !==
@@ -62,38 +114,49 @@ chrome.runtime.onMessage.addListener(
       return;
     }
 
+    if (translated) {
+      return;
+    }
+
+    translated = true;
+
+    console.count(
+      "CONTENT MESSAGE"
+    );
+
     console.log(
       "SUBTITLE JSON RECEIVED"
     );
 
     try {
+
       const rawSubtitles =
-      message.subtitleJson.events
+        message.subtitleJson.events
 
-        .filter(
-          event => event.segs
-        )
+          .filter(
+            event => event.segs
+          )
 
-        .map(
-          (event, index) => ({
+          .map(
+            (event, index) => ({
 
-            id: index,
+              id: index,
 
-            start:
-              event.tStartMs,
+              start:
+                event.tStartMs,
 
-            duration:
-              event.dDurationMs,
+              duration:
+                event.dDurationMs,
 
-            text:
-              event.segs
-                .map(
-                  seg => seg.utf8
-                )
-                .join("")
+              text:
+                event.segs
+                  .map(
+                    seg => seg.utf8
+                  )
+                  .join("")
 
-          })
-        );
+            })
+          );
 
       console.log(
         "\n=== RAW SUBTITLES ===\n"
@@ -121,7 +184,9 @@ chrome.runtime.onMessage.addListener(
           "#channel-name a"
         )?.textContent.trim();
 
-      console.count("POST TRANSLATE");
+      console.count(
+        "POST TRANSLATE"
+      );
 
       const response =
         await fetch(
@@ -133,13 +198,19 @@ chrome.runtime.onMessage.addListener(
                 "application/json"
             },
             body: JSON.stringify({
-               videoId:
+
+              videoId:
                 new URLSearchParams(
-                window.location.search
-              ).get("v"),
-              title: document.title,
+                  window.location.search
+                ).get("v"),
+
+              title:
+                document.title,
+
               channel,
+
               sentenceSubtitles
+
             })
           }
         );
@@ -157,7 +228,11 @@ chrome.runtime.onMessage.addListener(
         subtitles.length
       );
 
-    } catch (error) {
+    }
+
+    catch (error) {
+
+      translated = false;
 
       console.error(
         "\n=== SERVER ERROR ===\n"
@@ -167,9 +242,7 @@ chrome.runtime.onMessage.addListener(
 
     }
 
-  }
-
-);
+  });
 
 // sentenceRebuilder.js
 

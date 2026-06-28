@@ -7,8 +7,17 @@ export async function generateContext(
   transcriptSentence
 ) {
 
+  // const transcriptText =
+  //   transcriptSentence
+  //     .map(sentence => sentence.text)
+  //     .join("\n");
+
+  /** 맨 앞 n문장만을 컨텍스트에 적용 */
+  const CONTEXT_SUBTITLE_LIMIT = 50;
+
   const transcriptText =
     transcriptSentence
+      .slice(0, CONTEXT_SUBTITLE_LIMIT)
       .map(sentence => sentence.text)
       .join("\n");
 
@@ -16,81 +25,57 @@ export async function generateContext(
     await openai.responses.create({
       model: process.env.OPENAI_MODEL,
 
-      input: `
-You are creating a Translation Context Memory for subtitle translation into ${translateInto}.
+      input:
+`Create a Translation Context Memory for ${translateInto} subtitle translation.
 
 Analyze the video title and transcript.
 
-Focus only on information that improves translation quality.
+Return ONLY the template below.
 
-Output the following sections.
+TOPIC
+Topic:
+Domain:
+Tone:
 
-### TOPIC
+KEY TERMS (max 8)
+- 
+- 
+- 
 
-* Main topic
-* Domain
-* Tone
-
-Use the video title as an important source of context.
-
-### KEY TERMS
-
-List only important entities, products, technologies, organizations, people, or concepts that appear repeatedly or are central to understanding the video.
-
-### TERM DISAMBIGUATION
-
-Only include terms with multiple possible meanings.
-
-For each term provide:
-
+TERM DISAMBIGUATION (max 3)
 Term:
-Meaning in this video:
+Meaning:
 Avoid:
 Use:
 
-Example:
+Term:
+Meaning:
+Avoid:
+Use:
 
-Term: Agent
-Meaning: AI autonomous software agent
-Avoid: representative, secret agent
-Use: AI 에이전트
+TRANSLATION RULES
+-
+-
+-
 
-### TRANSLATION RULES
+STYLE GUIDE
+Ending:
+Register:
+Prefer:
+Avoid:
 
-Only include rules specific to this video.
+Rules:
 
-Examples:
-
-* Keep product names untranslated.
-* Use standard ${translateInto} technical terminology.
-* Prefer natural ${translateInto} over literal translation.
-* Maintain terminology consistency.
-
-### STYLE GUIDE
-
-Choose one:
-
-* -다
-* -습니다
-* -요
-
-Specify:
-
-* preferred register
-* preferred phrasing style
-* unnatural literal patterns to avoid
-* natural expressions to prefer
-
-The entire output must be under 180 words.
+- Fill only with information supported by the title or transcript.
+- Omit empty fields.
+- Include only important terms and ambiguous words.
+- Keep the entire output under 120 words.
 
 Video Title:
-
 ${videoTitle}
 
 Transcript:
-
-${transcriptText}
-`
+${transcriptText}`
     });
 
   console.log(

@@ -7,10 +7,18 @@ export async function generateContext(
   transcriptSentence
 ) {
 
+  // const transcriptText =
+  //   transcriptSentence
+  //     .map(sentence => sentence.text)
+  //     .join("\n");
+
+  const CONTEXT_SUBTITLE_LIMIT = 50;
+
   const transcriptText =
-    transcriptSentence
-      .map(sentence => sentence.text)
-      .join("\n");
+  transcriptSentence
+    .slice(0, CONTEXT_SUBTITLE_LIMIT)
+    .map(sentence => sentence.text)
+    .join("\n");
 
   const response =
     await openai.responses.create({

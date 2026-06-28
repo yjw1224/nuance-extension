@@ -146,22 +146,45 @@ ${transcriptText}`
         `Retry sentenceId ${sentence.sentenceId}`
       );
 
-      try {
+      let success = false;
 
-        const retry =
-          await translateOneSubtitle(
-            sentence,
-            context
+      for (
+        let i = 0;
+        i < 2;
+        i++
+      ) {
+
+        try {
+
+          const retry =
+            await translateOneSubtitle(
+              sentence,
+              context
+            );
+
+          translatedMap.set(
+            Number(retry.sentenceId),
+            retry.translatedText
           );
 
-        translatedMap.set(
-          Number(retry.sentenceId),
-          retry.translatedText
-        );
+          success = true;
+
+          break;
+
+        }
+
+        catch (error) {
+
+          console.log(
+            `Retry ${i + 1} failed`
+          );
+          console.error(error)
+
+        }
 
       }
 
-      catch {
+      if (!success) {
 
         throw new Error(
           `Retry failed for sentenceId ${sentence.sentenceId}`
@@ -275,9 +298,24 @@ ${JSON.stringify({
 
     });
 
-  return JSON.parse(
-    response.output_text
-  );
+    
+
+  try {
+
+      return JSON.parse(response.output_text);
+
+  }
+  catch(error){
+
+      console.log("\n=== RETRY INPUT ===");
+      console.log(sentence);
+
+      console.log("\n=== RETRY OUTPUT ===");
+      console.log(response.output_text);
+
+      throw error;
+
+  }
 
 }
 

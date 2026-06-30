@@ -1,12 +1,20 @@
 import { openai } from "./openai.js";
 import { translateInto } from "./language.js";
 
-function chunkArray(array, chunkSize = 10) {
+function chunkArray(
+  array,
+  chunkSize = 12
+) {
 
   const chunks = [];
 
+  // 첫 청크는 8문장
+  chunks.push(
+    array.slice(0, 8)
+  );
+
   for (
-    let i = 0;
+    let i = 8;
     i < array.length;
     i += chunkSize
   ) {
@@ -29,15 +37,13 @@ async function translateChunk(
 
       transcript.map(
 
-        sentence => ({
+        sentence => [
 
-          sentenceId:
-            sentence.sentenceId,
+          sentence.sentenceId,
 
-          text:
-            sentence.text
+          sentence.text
 
-        })
+        ]
       ),
 
       null,
@@ -54,40 +60,31 @@ async function translateChunk(
       temperature: 0,
 
       input: `
-      You are a professional subtitle translator.
-
-Translate every subtitle into natural ${translateInto}.
-
-Use the Translation Context Memory as the highest-priority reference for terminology, style and disambiguation.
+You are a professional subtitle translator.
+Translate each subtitle into natural ${translateInto}.
+Use the Translation Context Memory as the highest-priority reference for terminology, style, and disambiguation.
 
 Rules:
-
-- Preserve meaning and tone.
-- Do not omit, merge or split subtitles.
-- If a subtitle is incomplete, translate it as-is.
+- Preserve the original meaning and tone.
+- Translate each subtitle independently.
+- Do not merge, split, omit, or reorder subtitles.
 - Keep every sentenceId unchanged.
-- Translate only the text.
+- Translate only the text field.
 - Keep proper nouns when appropriate.
-
-Return ONLY this JSON array:
-
-[
-  {
-    "sentenceId": 0,
-    "translatedText": "..."
-  }
-]
-
-The number of output objects MUST equal the number of input objects.
-Every input sentenceId MUST appear exactly once.
+- If a subtitle is incomplete, translate only the available text.
+- Do not infer or complete missing context beyond the provided subtitle and Translation Context Memory.
 
 Translation Context Memory:
-
 ${context}
 
-Subtitles:
+Input:
+${transcriptText}
 
-${transcriptText}`
+Return only a JSON array in the same order and structure as the input:
+
+[
+  [0, "..."]
+]`
     });
 
   console.log(
@@ -130,12 +127,12 @@ ${transcriptText}`
   }
 
   const translatedMap =
-  new Map(
-    translated.map(item => [
-      Number(item.sentenceId),
-      item.translatedText
-    ])
-  );
+    new Map(
+      translated.map(([sentenceId, translatedText]) => [
+        Number(sentenceId),
+        translatedText
+      ])
+    );
 
   // 번호 누락 에러!
   for (const sentence of transcript) {
@@ -279,10 +276,10 @@ Use the Translation Context Memory.
 
 Return ONLY JSON.
 
-{
-  "sentenceId": ${sentence.sentenceId},
-  "translatedText": "..."
-}
+[
+  ${sentence.sentenceId},
+  "..."
+]
 
 Translation Context Memory:
 
@@ -301,9 +298,26 @@ ${JSON.stringify({
     
 
   try {
+    const [sentenceId, translatedText] =
+      JSON.parse(response.output_text);
 
-      return JSON.parse(response.output_text);
+      if (
+        !Array.isArray(translated) ||
+        translated.some(
+          item =>
+            !Array.isArray(item) ||
+            item.length !== 2 ||
+            typeof item[0] !== "number" ||
+            typeof item[1] !== "string"
+        )
+      ) {
+        throw new Error("Invalid translation format");
+      }
 
+    return {
+      sentenceId,
+      translatedText
+    };
   }
   catch(error){
 
@@ -321,7 +335,8 @@ ${JSON.stringify({
 
 export async function translateTranscript(
   transcriptSentence,
-  context
+  context,
+  onChunk = () => {}
 ) {
 
   let totalInputTokens = 0;
@@ -343,22 +358,24 @@ export async function translateTranscript(
     )
   );
 
-  const results =
-  await Promise.all(
-
+  const promises =
     chunks.map(
-
       (chunk, index) =>
-
         translateChunk(
           chunk,
           context,
           index
         )
+        .then(result => {
+          onChunk(result);
+          return result;
+        })
+    );
 
-    )
-
-  );
+  const results =
+    await Promise.all(
+      promises
+    );
 
   for (const result of results) {
 

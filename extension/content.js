@@ -215,13 +215,84 @@ window.addEventListener("message", async event => {
           }
         );
 
-      const result =
-        await response.json();
+      const reader =
+        response.body.getReader();
 
-      console.log(result);
+      const decoder =
+        new TextDecoder();
 
-      subtitles =
-        result.translation;
+      let buffer = "";
+
+      while (true) {
+
+        const {
+
+          value,
+
+          done
+
+        } =
+          await reader.read();
+
+        if (done) {
+          break;
+        }
+
+        buffer +=
+          decoder.decode(
+            value,
+            {
+              stream: true
+            }
+          );
+
+        const messages =
+          buffer.split("\n\n");
+
+        buffer =
+          messages.pop();
+
+        for (const message of messages) {
+
+          if (!message.trim()) {
+            continue;
+          }
+
+          const chunk =
+            JSON.parse(message);
+
+          subtitles.push(
+            ...chunk.translation
+          );
+
+          subtitles.sort(
+
+            (a, b) =>
+
+              a.sentenceId -
+              b.sentenceId
+
+          );
+
+          console.log(
+            "STREAM:",
+            chunk
+          );
+
+        }
+
+      }
+
+      if (buffer.trim()) {
+
+        const chunk =
+          JSON.parse(buffer);
+
+        subtitles.push(
+          ...chunk.translation
+        );
+
+      }
 
       console.log(
         "Translated:",

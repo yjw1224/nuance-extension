@@ -23,7 +23,7 @@ export async function generateContext(
 
   const response =
     await openai.responses.create({
-      model: process.env.OPENAI_MODEL,
+      model: process.env.OPENAI_CONTEXT_MODEL,
 
       input:
 `Create a Translation Context Memory for ${translateInto} subtitle translation.

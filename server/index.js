@@ -21,6 +21,21 @@ app.post("/translate", async (req, res) => {
   const startTime =
     Date.now();
 
+  res.setHeader(
+    "Content-Type",
+    "text/plain; charset=utf-8"
+  );
+
+  res.setHeader(
+    "Cache-Control",
+    "no-cache"
+  );
+
+  res.setHeader(
+    "Connection",
+    "keep-alive"
+  );
+
   try {
 
     const {
@@ -32,6 +47,8 @@ app.post("/translate", async (req, res) => {
       sentenceSubtitles
 
     } = req.body;
+
+    const t0 = Date.now();
 
     const {
 
@@ -46,6 +63,15 @@ app.post("/translate", async (req, res) => {
         sentenceSubtitles
       );
 
+    console.log(
+      "Context:",
+      Date.now() - t0
+    );
+
+    const t1 = Date.now();
+    const streamStart = Date.now();
+    let firstChunk = true;
+
     const {
 
       translation,
@@ -58,8 +84,29 @@ app.post("/translate", async (req, res) => {
     } =
       await translateTranscript(
         sentenceSubtitles,
-        context
+        context,
+        chunk => {
+          if (firstChunk) {
+
+            console.log(
+              "Time To First Chunk:",
+              Date.now() - streamStart
+            );
+
+            firstChunk = false;
+
+          }
+            res.write(
+              JSON.stringify(chunk)
+              + "\n\n"
+            );
+        }
       );
+
+    console.log(
+      "Translation:",
+      Date.now() - t1
+    );
 
     const totalMs =
         Date.now() -
@@ -118,11 +165,11 @@ app.post("/translate", async (req, res) => {
 
     });
 
-    res.json({
+    // res.json({
+    //   translation
+    // });
 
-      translation
-
-    });
+    res.end();
 
   }
 

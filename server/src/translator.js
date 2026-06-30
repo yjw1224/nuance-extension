@@ -61,18 +61,21 @@ async function translateChunk(
 
       input: `
 You are a professional subtitle translator.
+
 Translate each subtitle into natural ${translateInto}.
+
 Use the Translation Context Memory as the highest-priority reference for terminology, style, and disambiguation.
 
 Rules:
 - Preserve the original meaning and tone.
-- Translate each subtitle independently.
+- Adjacent subtitles may belong to the same sentence. Use neighboring subtitles only to understand context.
+- Return exactly one output entry for every input subtitle.
+- Keep the original sentenceId for every subtitle.
 - Do not merge, split, omit, or reorder subtitles.
-- Keep every sentenceId unchanged.
 - Translate only the text field.
 - Keep proper nouns when appropriate.
-- If a subtitle is incomplete, translate only the available text.
-- Do not infer or complete missing context beyond the provided subtitle and Translation Context Memory.
+- If a subtitle is incomplete, use neighboring subtitles only to understand the context, but translate only the available text.
+- Do not invent information beyond the provided subtitles and Translation Context Memory.
 
 Translation Context Memory:
 ${context}
@@ -259,6 +262,12 @@ async function translateOneSubtitle(
   sentence,
   context
 ) {
+  if (!sentence.text.trim()) {
+    return {
+      sentenceId: sentence.sentenceId,
+      translatedText: ""
+    };
+  }
 
   const response =
     await openai.responses.create({
@@ -298,21 +307,20 @@ ${JSON.stringify({
     
 
   try {
-    const [sentenceId, translatedText] =
+    const translated =
       JSON.parse(response.output_text);
 
-      if (
-        !Array.isArray(translated) ||
-        translated.some(
-          item =>
-            !Array.isArray(item) ||
-            item.length !== 2 ||
-            typeof item[0] !== "number" ||
-            typeof item[1] !== "string"
-        )
-      ) {
-        throw new Error("Invalid translation format");
-      }
+    if (
+      !Array.isArray(translated) ||
+      translated.length !== 2 ||
+      typeof translated[0] !== "number" ||
+      typeof translated[1] !== "string"
+    ) {
+      throw new Error("Invalid translation format");
+    }
+
+    const [sentenceId, translatedText] =
+      translated;
 
     return {
       sentenceId,

@@ -22,6 +22,7 @@ box.className =
   "nuance-subtitle";
 
 document.body.append(box);
+box.style.display = "none";
 
 let subtitles = [];
 
@@ -52,6 +53,7 @@ setInterval(() => {
     subtitles = [];
 
     box.textContent = "";
+    box.style.display = 'none';
 
     console.log(
       "Video changed:",
@@ -91,8 +93,13 @@ setInterval(() => {
           subtitle.duration
     );
 
-  box.textContent =
+  const text =
     currentSubtitle?.text ?? "";
+
+  box.textContent = text;
+
+  box.style.display =
+    text ? "block" : "none";
 
 }, 100);
 

@@ -62,55 +62,43 @@ app.post("/translate", async (req, res) => {
         title,
         sentenceSubtitles
       );
+    
+    const contextMs = Date.now() - t0;
 
     console.log(
-      "Context:",
-      Date.now() - t0
+      "Context:", contextMs
     );
 
     const t1 = Date.now();
-    const streamStart = Date.now();
-    let firstChunk = true;
 
     const {
-
       translation,
-
       usage:
         translationUsage,
-
-      chunkCount
-
+      chunkCount,
+      ttfs,
+      retryCount
     } =
-      await translateTranscript(
-        sentenceSubtitles,
-        context,
-        chunk => {
-          if (firstChunk) {
+    await translateTranscript(
+      sentenceSubtitles,
+      context,
+      chunk => {
 
-            console.log(
-              "Time To First Chunk:",
-              Date.now() - streamStart
-            );
+        res.write(
+          JSON.stringify(chunk)
+          + "\n\n"
+        );
 
-            firstChunk = false;
-
-          }
-            res.write(
-              JSON.stringify(chunk)
-              + "\n\n"
-            );
-        }
-      );
-
-    console.log(
-      "Translation:",
-      Date.now() - t1
+      }
     );
 
-    const totalMs =
-        Date.now() -
-        startTime;
+    const translationMs = Date.now() - t1;
+
+    console.log(
+      "Translation:", translationMs
+    );
+
+    const totalMs = contextMs + translationMs;
 
     const durationSec =
     Math.floor(
@@ -135,6 +123,8 @@ app.post("/translate", async (req, res) => {
 
     saveBenchmark({
 
+      // ===== Video =====
+
       videoId,
 
       durationSec,
@@ -144,8 +134,15 @@ app.post("/translate", async (req, res) => {
 
       chunkCount,
 
-      model:
+      // ===== Model =====
+
+      contextModel:
+        process.env.OPENAI_CONTEXT_MODEL,
+
+      translationModel:
         process.env.OPENAI_MODEL,
+
+      // ===== Token =====
 
       contextInputTokens:
         contextUsage.input_tokens,
@@ -161,13 +158,43 @@ app.post("/translate", async (req, res) => {
 
       totalTokens,
 
-      totalMs
+      // ===== Performance =====
+
+      contextMs,
+
+      translationMs,
+
+      ttfs,
+
+      totalMs,
+
+      // ===== Reliability =====
+
+      retryCount
 
     });
 
-    // res.json({
-    //   translation
-    // });
+    console.table({
+
+      contextModel:
+        process.env.OPENAI_CONTEXT_MODEL,
+
+      translationModel:
+        process.env.OPENAI_MODEL,
+
+      contextMs,
+
+      translationMs,
+
+      ttfs,
+
+      totalMs,
+
+      retryCount,
+
+      totalTokens
+
+    });
 
     res.end();
 

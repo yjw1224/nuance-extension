@@ -6,12 +6,6 @@ export async function generateContext(
   videoTitle,
   transcriptSentence
 ) {
-
-  // const transcriptText =
-  //   transcriptSentence
-  //     .map(sentence => sentence.text)
-  //     .join("\n");
-
   /** 맨 앞 n문장만을 컨텍스트에 적용 */
   const CONTEXT_SUBTITLE_LIMIT = 50;
 

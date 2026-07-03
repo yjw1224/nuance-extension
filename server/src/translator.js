@@ -1,5 +1,9 @@
 import { openai } from "./openai.js";
 import { translateInto } from "./language.js";
+import {
+  parseGPTJson
+}
+from "./gptParser.js";
 
 function chunkArray(
   array,
@@ -31,6 +35,8 @@ async function translateChunk(
   context,
   chunkIndex
 ) {
+
+  let retryCount = 0;
 
   const transcriptText =
     JSON.stringify(
@@ -106,10 +112,17 @@ Return only a JSON array in the same order and structure as the input:
 
   try {
 
-    translated =
-      JSON.parse(
-        response.output_text
+    const raw =
+      response.output_text;
+
+    const jsonText =
+      raw.slice(
+        raw.indexOf("["),
+        raw.lastIndexOf("]") + 1
       );
+
+    translated =
+      parseGPTJson(jsonText);
 
   }
 
@@ -145,6 +158,8 @@ Return only a JSON array in the same order and structure as the input:
       console.log(
         `Retry sentenceId ${sentence.sentenceId}`
       );
+
+      retryCount++;
 
       let success = false;
 
@@ -253,7 +268,9 @@ Return only a JSON array in the same order and structure as the input:
       ),
 
     usage:
-      response.usage
+      response.usage,
+
+    retryCount
 
   };
 }
@@ -307,8 +324,17 @@ ${JSON.stringify({
     
 
   try {
+    const raw =
+      response.output_text;
+
+    const jsonText =
+      raw.slice(
+        raw.indexOf("["),
+        raw.lastIndexOf("]") + 1
+      );
+
     const translated =
-      JSON.parse(response.output_text);
+      parseGPTJson(jsonText);
 
     if (
       !Array.isArray(translated) ||
@@ -346,9 +372,14 @@ export async function translateTranscript(
   context,
   onChunk = () => {}
 ) {
+  const start =
+    Date.now();
+
+  let ttfs = null;
 
   let totalInputTokens = 0;
   let totalOutputTokens = 0;
+  let totalRetryCount = 0;
 
   const chunks =
     chunkArray(
@@ -375,8 +406,18 @@ export async function translateTranscript(
           index
         )
         .then(result => {
+
+          if (ttfs === null) {
+
+            ttfs =
+              Date.now() - start;
+
+          }
+
           onChunk(result);
+
           return result;
+
         })
     );
 
@@ -392,6 +433,9 @@ export async function translateTranscript(
 
     totalOutputTokens +=
       result.usage.output_tokens;
+
+    totalRetryCount +=
+      result.retryCount;
 
   }
 
@@ -416,7 +460,12 @@ export async function translateTranscript(
     },
 
     chunkCount:
-      chunks.length
+      chunks.length,
+
+    ttfs,
+
+    retryCount:
+      totalRetryCount
 
   };
 }

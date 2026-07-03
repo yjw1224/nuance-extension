@@ -13,31 +13,7 @@ const logFile =
     "benchmark.csv"
   );
 
-export function saveBenchmark({
-
-  videoId,
-
-  durationSec,
-
-  subtitleCount,
-
-  chunkCount,
-
-  model,
-
-  contextInputTokens,
-
-  contextOutputTokens,
-
-  translationInputTokens,
-
-  translationOutputTokens,
-
-  totalTokens,
-
-  totalMs
-
-}) {
+export function saveBenchmark(data) {
 
   // logs 폴더 생성
   if (
@@ -53,7 +29,10 @@ export function saveBenchmark({
 
   }
 
-  // CSV 헤더
+  const headers =
+    Object.keys(data);
+
+  // CSV 헤더 생성
   if (
     !fs.existsSync(logFile)
   ) {
@@ -62,8 +41,10 @@ export function saveBenchmark({
 
       logFile,
 
-`date,videoId,durationSec,subtitleCount,chunkCount,model,contextInputTokens,contextOutputTokens,translationInputTokens,translationOutputTokens,totalTokens,totalMs
-`
+      [
+        "date",
+        ...headers
+      ].join(",") + "\n"
 
     );
 
@@ -73,31 +54,30 @@ export function saveBenchmark({
     new Date()
       .toISOString();
 
-  const row = [
+  const row =
+    [
+      now,
 
-    now,
+      ...headers.map(
 
-    videoId,
+        key => {
 
-    durationSec,
+          const value =
+            data[key];
 
-    subtitleCount,
+          if (
+            value === undefined ||
+            value === null
+          ) {
+            return "";
+          }
 
-    chunkCount,
+          return String(value)
+            .replaceAll(",", " ");
 
-    model,
+        }
 
-    contextInputTokens,
-
-    contextOutputTokens,
-
-    translationInputTokens,
-
-    translationOutputTokens,
-
-    totalTokens,
-
-    totalMs
+      )
 
     ].join(",");
 

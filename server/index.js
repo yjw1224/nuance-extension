@@ -5,6 +5,10 @@ import { generateContext } from "./src/context.js";
 import { translateTranscript } from "./src/translator.js";
 import { saveBenchmark }
   from "./src/benchmark.js";
+import {
+  preprocessSubtitles
+}
+from "./src/subtitlePreprocessor.js";
 
 dotenv.config();
 
@@ -48,6 +52,11 @@ app.post("/translate", async (req, res) => {
 
     } = req.body;
 
+    const filteredSubtitles =
+      preprocessSubtitles(
+        sentenceSubtitles
+      );
+
     const t0 = Date.now();
 
     const {
@@ -60,7 +69,7 @@ app.post("/translate", async (req, res) => {
     } =
       await generateContext(
         title,
-        sentenceSubtitles
+        filteredSubtitles
       );
     
     const contextMs = Date.now() - t0;
@@ -80,7 +89,7 @@ app.post("/translate", async (req, res) => {
       retryCount
     } =
     await translateTranscript(
-      sentenceSubtitles,
+      filteredSubtitles,
       context,
       chunk => {
 
@@ -129,8 +138,11 @@ app.post("/translate", async (req, res) => {
 
       durationSec,
 
-      subtitleCount:
+      rawSubtitleCount:
         sentenceSubtitles.length,
+      
+      processedSubtitleCount:
+        filteredSubtitles.length,
 
       chunkCount,
 

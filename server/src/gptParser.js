@@ -20,6 +20,12 @@ function sanitizeGPTOutput(text) {
     "$1"
     )
 
+    // trailing comma 제거
+    .replace(
+      /,\s*([\]}])/g,
+      "$1"
+    )
+
     .trim();
 
 }

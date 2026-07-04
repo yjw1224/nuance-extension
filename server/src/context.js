@@ -1,6 +1,6 @@
 import { openai } from "./openai.js";
 
-import { translateInto } from "./language.js";
+import { translateFrom, translateInto } from "./language.js";
 
 export async function generateContext(
   videoTitle,
@@ -15,73 +15,155 @@ export async function generateContext(
       .map(sentence => sentence.text)
       .join("\n");
 
-  const response =
-    await openai.responses.create({
-      model: process.env.OPENAI_CONTEXT_MODEL,
+const response = await openai.responses.parse({
+  model: process.env.OPENAI_CONTEXT_MODEL,
 
-      input:
-`Create a Translation Context Memory for ${translateInto} subtitle translation.
+  text: {
+    format: {
+      type: "json_schema",
+      name: "translation_context_memory",
+      strict: true,
 
-Analyze the video title and transcript.
+      schema: {
+        type: "object",
+        additionalProperties: false,
 
-Return ONLY the template below.
+        properties: {
 
-TOPIC
-Topic:
-Domain:
-Tone:
+          summary: {
+            type: "string"
+          },
 
-KEY TERMS (max 8)
-- 
-- 
-- 
+          terminology: {
+            type: "array",
+            maxItems: 8,
+            items: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                source: {
+                  type: "string"
+                },
+                target: {
+                  type: "string"
+                },
+                priority: {
+                  type: "integer",
+                  minimum: 1,
+                  maximum: 3
+                }
+              },
+              required: [
+                "source",
+                "target",
+                "priority"
+              ]
+            }
+          },
 
-TERM DISAMBIGUATION (max 3)
-Term:
-Meaning:
-Avoid:
-Use:
+          ambiguousTerms: {
+            type: "array",
+            maxItems: 5,
+            items: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                term: {
+                  type: "string"
+                },
+                meaning: {
+                  type: "string"
+                }
+              },
+              required: [
+                "term",
+                "meaning"
+              ]
+            }
+          },
 
-Term:
-Meaning:
-Avoid:
-Use:
+          narration: {
+            type: "string"
+          }
 
-TRANSLATION RULES
--
--
--
+        },
 
-STYLE GUIDE
-Ending:
-Register:
-Prefer:
-Avoid:
+        required: [
+          "summary",
+          "terminology",
+          "ambiguousTerms",
+          "narration"
+        ]
+      }
+    }
+  },
+
+  input: `
+Extract translation memory for subtitle translation into ${translateInto}.
+
+Return only information that will improve translation accuracy and consistency.
 
 Rules:
 
-- Fill only with information supported by the title or transcript.
-- Omit empty fields.
-- Include only important terms and ambiguous words.
-- Keep the entire output under 120 words.
+- Summary: describe the video's topic in 1 sentences for translation context only.
+- Terminology: extract up to 8 important source-language (${translateFrom}) terms that appear in the transcript. Provide the preferred ${translateInto} translation and assign a priority:
+  1 = essential for translation consistency across the video,
+  2 = important,
+  3 = useful but optional.
+- AmbiguousTerms: include only words that could reasonably be mistranslated in this video's context.
+- Narration: describe the speaking style in a few words.
+
+If information is unavailable, return "" or [].
 
 Video Title:
 ${videoTitle}
 
 Transcript:
-${transcriptText}`
-    });
+${transcriptText}
+`
+});
 
-  console.log(
-    JSON.stringify(
-      response.usage,
-      null,
-      2
-    )
-  );
+  console.log(response.output_parsed);
 
   return {
-    context: response.output_text,
+    context: formatContext(response.output_parsed),
     usage: response.usage
   };
+}
+
+function formatContext(context) {
+
+  const out = [];
+
+  if (context.summary) {
+    out.push(`Summary: ${context.summary}`);
+  }
+
+  if (context.terminology.length) {
+    out.push(
+      "Terminology:\n" +
+      context.terminology
+        .sort((a, b) => a.priority - b.priority)
+        .map(x =>
+          `P${x.priority}: ${x.source} → ${x.target}`
+        )
+        .join("\n")
+    );
+  }
+
+  if (context.ambiguousTerms.length) {
+    out.push(
+      "Ambiguous:\n" +
+      context.ambiguousTerms
+        .map(x => `${x.term} = ${x.meaning}`)
+        .join("\n")
+    );
+  }
+
+  if (context.narration) {
+    out.push(`Narration: ${context.narration}`);
+  }
+
+  return out.join("\n\n");
+
 }

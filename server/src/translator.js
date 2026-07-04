@@ -140,7 +140,7 @@ ${transcriptText}
 
   try {
     translated = response.output_parsed.translations;
-    console.log(translated);
+    // console.log(translated);
   } catch (error) {
     console.log("\n=== RAW GPT OUTPUT ===\n");
     console.log(response.output_text);

@@ -268,6 +268,9 @@ window.addEventListener("message", async event => {
           const chunk =
             JSON.parse(message);
 
+            console.log(chunk);
+            console.log(Array.isArray(chunk.translation));
+
           subtitles.push(
             ...chunk.translation
           );

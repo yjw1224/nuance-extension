@@ -18,7 +18,9 @@ app.use(cors({
   origin: "*"
 }));
 
-app.use(express.json());
+app.use(express.json({
+  limit: "10mb"
+}));
 
 app.post("/translate", async (req, res) => {
 
@@ -129,10 +131,13 @@ app.post("/translate", async (req, res) => {
     );
 
     const totalTokens = contextUsage.input_tokens + contextUsage.output_tokens + translationUsage.inputTokens + translationUsage.outputTokens;
+    const videoType = "Edu";
 
     saveBenchmark({
 
       // ===== Video =====
+
+      videoType,
 
       videoId,
 

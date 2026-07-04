@@ -58,43 +58,71 @@ async function translateChunk(
 
     );
 
-  const response =
-    await openai.responses.create({
+const response = await openai.responses.parse({
+  model: process.env.OPENAI_MODEL,
 
-      model: process.env.OPENAI_MODEL,
+  temperature: 0,
 
-      temperature: 0,
+  text: {
+    format: {
+      type: "json_schema",
+      name: "subtitle_translation",
+      strict: true,
+      schema: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          translations: {
+            type: "array",
+            minItems: transcript.length,
+            maxItems: transcript.length,
+            items: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                sentenceId: {
+                  type: "integer"
+                },
+                translatedText: {
+                  type: "string"
+                }
+              },
+              required: [
+                "sentenceId",
+                "translatedText"
+              ]
+            }
+          }
+        },
+        required: [
+          "translations"
+        ]
+      }
+    }
+  },
 
-      input: `
-You are a professional subtitle translator.
-
+  input: `You are a professional subtitle translator.
 Translate each subtitle into natural ${translateInto}.
-
 Use the Translation Context Memory as the highest-priority reference for terminology, style, and disambiguation.
 
 Rules:
 - Preserve the original meaning and tone.
-- Adjacent subtitles may belong to the same sentence. Use neighboring subtitles only to understand context.
-- Return exactly one output entry for every input subtitle.
-- Keep the original sentenceId for every subtitle.
-- Do not merge, split, omit, or reorder subtitles.
 - Translate only the text field.
+- Return exactly one translation for every input subtitle.
+- Never omit, duplicate, merge, split, reorder, or invent subtitles.
+- Preserve the original sentenceId and output order.
+- Use neighboring subtitles only for context; translate only the current subtitle text.
 - Keep proper nouns when appropriate.
-- If a subtitle is incomplete, use neighboring subtitles only to understand the context, but translate only the available text.
 - Do not invent information beyond the provided subtitles and Translation Context Memory.
+- The number of output translations MUST exactly equal the number of input subtitles.
 
 Translation Context Memory:
 ${context}
 
 Input:
 ${transcriptText}
-
-Return only a JSON array in the same order and structure as the input:
-
-[
-  [0, "..."]
-]`
-    });
+`
+});
 
   console.log(
     `\n=== CHUNK ${chunkIndex + 1} ===`
@@ -111,44 +139,21 @@ Return only a JSON array in the same order and structure as the input:
   let translated;
 
   try {
+    translated = response.output_parsed.translations;
+    console.log(translated);
+  } catch (error) {
+    console.log("\n=== RAW GPT OUTPUT ===\n");
+    console.log(response.output_text);
 
-    const raw =
-      response.output_text;
-
-    const jsonText =
-      raw.slice(
-        raw.indexOf("["),
-        raw.lastIndexOf("]") + 1
-      );
-
-    translated =
-      parseGPTJson(jsonText);
-
+    throw new Error("Invalid structured output from GPT");
   }
 
-  catch (error) {
-
-    console.log(
-      "\n=== RAW GPT OUTPUT ===\n"
-    );
-
-    console.log(
-      response.output_text
-    );
-
-    throw new Error(
-      "Invalid JSON from GPT"
-    );
-
-  }
-
-  const translatedMap =
-    new Map(
-      translated.map(([sentenceId, translatedText]) => [
-        Number(sentenceId),
-        translatedText
-      ])
-    );
+  const translatedMap = new Map(
+    translated.map(({ sentenceId, translatedText }) => [
+      Number(sentenceId),
+      translatedText
+    ])
+  );
 
   // 번호 누락 에러!
   for (const sentence of transcript) {
@@ -286,26 +291,54 @@ async function translateOneSubtitle(
     };
   }
 
-  const response =
-    await openai.responses.create({
+  const response = await openai.responses.parse({
+    model: process.env.OPENAI_MODEL,
+    temperature: 0,
 
-      model: process.env.OPENAI_MODEL,
+    text: {
+      format: {
+        type: "json_schema",
+        name: "subtitle_translation",
+        strict: true,
+        schema: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            translations: {
+              type: "array",
+              minItems: 1,
+              maxItems: 1,
+              items: {
+                type: "object",
+                additionalProperties: false,
+                properties: {
+                  sentenceId: {
+                    type: "integer"
+                  },
+                  translatedText: {
+                    type: "string"
+                  }
+                },
+                required: [
+                  "sentenceId",
+                  "translatedText"
+                ]
+              }
+            }
+          },
+          required: [
+            "translations"
+          ]
+        }
+      }
+    },
 
-      temperature: 0,
-
-      input: `
+    input: `
 You are a professional subtitle translator.
 
 Translate this subtitle into natural ${translateInto}.
 
 Use the Translation Context Memory.
-
-Return ONLY JSON.
-
-[
-  ${sentence.sentenceId},
-  "..."
-]
 
 Translation Context Memory:
 
@@ -318,51 +351,37 @@ ${JSON.stringify({
   text: sentence.text
 })}
 `
-
-    });
+});
 
     
 
   try {
-    const raw =
-      response.output_text;
-
-    const jsonText =
-      raw.slice(
-        raw.indexOf("["),
-        raw.lastIndexOf("]") + 1
-      );
-
-    const translated =
-      parseGPTJson(jsonText);
+    const parsed = response.output_parsed;
 
     if (
-      !Array.isArray(translated) ||
-      translated.length !== 2 ||
-      typeof translated[0] !== "number" ||
-      typeof translated[1] !== "string"
+      !parsed ||
+      !Array.isArray(parsed.translations) ||
+      parsed.translations.length !== 1
     ) {
       throw new Error("Invalid translation format");
     }
 
-    const [sentenceId, translatedText] =
-      translated;
+    const { sentenceId, translatedText } =
+      parsed.translations[0];
 
     return {
       sentenceId,
       translatedText
     };
   }
-  catch(error){
+  catch (error) {
+    console.log("\n=== RETRY INPUT ===");
+    console.log(sentence);
 
-      console.log("\n=== RETRY INPUT ===");
-      console.log(sentence);
+    console.log("\n=== RETRY OUTPUT ===");
+    console.log(response.output_text);
 
-      console.log("\n=== RETRY OUTPUT ===");
-      console.log(response.output_text);
-
-      throw error;
-
+    throw error;
   }
 
 }

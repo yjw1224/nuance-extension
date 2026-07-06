@@ -205,11 +205,14 @@ function createMarker(
     "mousemove",
     e => {
 
-      tooltip.style.left =
-      `${e.clientX + 14}px`;
+      const rect =
+        tooltip.getBoundingClientRect();
 
-    tooltip.style.top =
-      `${e.clientY - 12}px`;
+      tooltip.style.left =
+        `${e.clientX - rect.width / 2}px`;
+
+      tooltip.style.top =
+        `${e.clientY - rect.height - 14}px`;
 
     }
   );
@@ -282,11 +285,14 @@ function showTooltip(
 
   tooltip.style.display = "block";
 
+  const rect =
+    tooltip.getBoundingClientRect();
+
   tooltip.style.left =
-    `${e.clientX + 12}px`;
+    `${e.clientX - rect.width / 2}px`;
 
   tooltip.style.top =
-    `${e.clientY - 12}px`;
+    `${e.clientY - rect.height - 14}px`;
 
   tooltip.style.opacity = "1";
 
@@ -301,6 +307,8 @@ function renderMarkers() {
 
   const video =
     document.querySelector("video");
+
+  console.log(video?.duration);
 
   if (
     !video ||
@@ -350,14 +358,6 @@ function renderMarkers() {
       continue;
     }
 
-    const range =
-      createRange(
-        item,
-        subtitle,
-        endSubtitle,
-        video
-      );
-
     const marker =
       createMarker(
         item,
@@ -366,9 +366,17 @@ function renderMarkers() {
         video
       );
 
+    const range =
+      createRange(
+        item,
+        subtitle,
+        endSubtitle,
+        video
+      );
+
     markerContainer.append(
-      range,
-      marker
+      marker,
+      range
     );
 
   }
@@ -393,6 +401,8 @@ setInterval(() => {
     translated = false;
 
     subtitles = [];
+
+    sentences = [];
 
     timeline = [];
 

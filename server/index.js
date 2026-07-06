@@ -9,6 +9,10 @@ import {
   preprocessSubtitles
 }
 from "./src/subtitlePreprocessor.js";
+import {
+  generateLearningTimeline
+}
+from "./src/learningTimeline.js";
 
 dotenv.config();
 
@@ -62,54 +66,139 @@ app.post("/translate", async (req, res) => {
     const t0 = Date.now();
 
     const {
-
       context,
-
-      usage:
-        contextUsage
-
+      usage: contextUsage
     } =
-      await generateContext(
-        title,
-        filteredSubtitles
-      );
-    
-    const contextMs = Date.now() - t0;
+    await generateContext(
+      title,
+      filteredSubtitles
+    );
+
+    const contextMs =
+      Date.now() - t0;
 
     console.log(
-      "Context:", contextMs
+      "Context:",
+      contextMs
     );
+
+    // ------------------------------
+    // Translation + Learning Timeline
+    // ------------------------------
 
     const t1 = Date.now();
 
-    const {
-      translation,
-      usage:
-        translationUsage,
-      chunkCount,
-      ttfs,
-      retryCount
-    } =
-    await translateTranscript(
-      filteredSubtitles,
-      context,
-      chunk => {
+    // const translationPromise =
+    //   translateTranscript(
+    //     filteredSubtitles,
+    //     context,
+    //     chunk => {
 
-        res.write(
-          JSON.stringify(chunk)
-          + "\n\n"
+    //       res.write(
+    //         JSON.stringify({
+    //           type: "translation",
+    //           ...chunk
+    //         }) + "\n\n"
+    //       );
+
+    //     }
+    //   );
+
+    let learningPromise = null;
+
+    const learningEnabled = true;
+
+    if (learningEnabled) {
+
+      learningPromise =
+        generateLearningTimeline(
+          filteredSubtitles
         );
 
-      }
-    );
+    }
 
-    const translationMs = Date.now() - t1;
+    // const {
+
+    //   translation,
+
+    //   usage:
+    //     translationUsage,
+
+    //   chunkCount,
+
+    //   ttfs,
+
+    //   retryCount
+
+    // } =
+    // await translationPromise;
+
+    const translationMs =
+      Date.now() - t1;
 
     console.log(
-      "Translation:", translationMs
+      "Translation:",
+      translationMs
     );
 
-    const totalMs = contextMs + translationMs;
+    let timeline = [];
+
+    let learningUsage = {
+
+      input_tokens: 0,
+
+      output_tokens: 0
+
+    };
+
+    let learningMs = 0;
+
+    if (learningPromise) {
+
+      const t2 = Date.now();
+
+      const learning =
+        await learningPromise;
+
+      learningMs =
+        Date.now() - t2;
+
+      timeline =
+        learning.timeline;
+
+      learningUsage =
+        learning.usage;
+
+      res.write(
+        JSON.stringify({
+
+          type: "timeline",
+
+          timeline
+
+        }) + "\n\n"
+      );
+
+      console.log(
+        "Learning:",
+        learningMs
+      );
+
+      console.log(
+        "\n=== LEARNING TIMELINE ===\n"
+      );
+
+      console.log(
+        JSON.stringify(
+          timeline,
+          null,
+          2
+        )
+      );
+
+    }
+
+    const totalMs = contextMs + translationMs + learningMs;
 
     const durationSec =
     Math.floor(
@@ -130,66 +219,140 @@ app.post("/translate", async (req, res) => {
 
     );
 
-    const totalTokens = contextUsage.input_tokens + contextUsage.output_tokens + translationUsage.inputTokens + translationUsage.outputTokens;
+    const totalTokens = contextUsage.input_tokens + contextUsage.output_tokens
+    // + translationUsage.inputTokens + translationUsage.outputTokens
+    + learningUsage.input_tokens + learningUsage.output_tokens;
     const videoType = "Edu";
 
-    saveBenchmark({
+    const conceptCount =
+      timeline.length;
 
-      // ===== Video =====
+    const averageInvestmentScore =
+      conceptCount === 0
+        ? 0
+        : (
+            timeline.reduce(
+              (sum, concept) =>
+                sum +
+                concept.investmentScore,
+              0
+            ) / conceptCount
+          ).toFixed(2);
 
-      videoType,
+    const highestInvestmentScore =
+      conceptCount === 0
+        ? 0
+        : Math.max(
+            ...timeline.map(
+              concept =>
+                concept.investmentScore
+            )
+          );
 
-      videoId,
+    const conceptDensity =
+      durationSec === 0
+        ? 0
+        : (
+            conceptCount /
+            (durationSec / 60)
+          ).toFixed(2);
 
-      durationSec,
+    const averageSegmentLength =
+      conceptCount === 0
+        ? 0
+        : (
+            timeline.reduce(
+              (sum, concept) =>
+                sum +
+                (
+                  concept.endSentenceId -
+                  concept.startSentenceId +
+                  1
+                ),
+              0
+            ) / conceptCount
+          ).toFixed(2);
 
-      rawSubtitleCount:
-        sentenceSubtitles.length,
-      
-      processedSubtitleCount:
-        filteredSubtitles.length,
+    // saveBenchmark({
 
-      chunkCount,
+    //   // ===== Video =====
 
-      // ===== Model =====
+    //   videoType,
 
-      contextModel:
-        process.env.OPENAI_CONTEXT_MODEL,
+    //   videoId,
 
-      translationModel:
-        process.env.OPENAI_MODEL,
+    //   durationSec,
 
-      // ===== Token =====
+    //   rawSubtitleCount:
+    //     sentenceSubtitles.length,
 
-      contextInputTokens:
-        contextUsage.input_tokens,
+    //   processedSubtitleCount:
+    //     filteredSubtitles.length,
 
-      contextOutputTokens:
-        contextUsage.output_tokens,
+    //   chunkCount,
 
-      translationInputTokens:
-        translationUsage.inputTokens,
+    //   // ===== Model =====
 
-      translationOutputTokens:
-        translationUsage.outputTokens,
+    //   contextModel:
+    //     process.env.OPENAI_CONTEXT_MODEL,
 
-      totalTokens,
+    //   translationModel:
+    //     process.env.OPENAI_MODEL,
 
-      // ===== Performance =====
+    //   learningModel:
+    //     process.env.OPENAI_LEARNING_MODEL,
 
-      contextMs,
+    //   // ===== Token =====
 
-      translationMs,
+    //   contextInputTokens:
+    //     contextUsage.input_tokens,
 
-      ttfs,
+    //   contextOutputTokens:
+    //     contextUsage.output_tokens,
 
-      totalMs,
+    //   translationInputTokens:
+    //     translationUsage.inputTokens,
 
-      // ===== Reliability =====
+    //   translationOutputTokens:
+    //     translationUsage.outputTokens,
 
-      retryCount
+    //   learningTimelineInputTokens:
+    //     learningUsage.input_tokens,
 
-    });
+    //   learningTimelineOutputTokens:
+    //     learningUsage.output_tokens,
+
+    //   totalTokens,
+
+    //   // ===== Performance =====
+
+    //   contextMs,
+
+    //   translationMs,
+
+    //   ttfs,
+
+    //   learningMs,
+
+    //   totalMs,
+
+    //   // ===== Learning Timeline =====
+
+    //   conceptCount,
+
+    //   averageInvestmentScore,
+
+    //   highestInvestmentScore,
+
+    //   conceptDensity,
+
+    //   averageSegmentLength,
+
+    //   // ===== Reliability =====
+
+    //   retryCount
+
+    // });
 
     console.table({
 
@@ -199,15 +362,20 @@ app.post("/translate", async (req, res) => {
       translationModel:
         process.env.OPENAI_MODEL,
 
+      learningModel:
+        process.env.OPENAI_LEARNING_MODEL,
+
       contextMs,
 
-      translationMs,
+      // translationMs,
 
-      ttfs,
+      // ttfs,
+
+      learningMs,
 
       totalMs,
 
-      retryCount,
+      // retryCount,
 
       totalTokens
 

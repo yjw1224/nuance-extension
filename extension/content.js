@@ -41,6 +41,36 @@ tooltip.style.display = "none";
 tooltip.style.display =
   "none";
 
+tooltip.addEventListener(
+  "click",
+  e => {
+
+    const row =
+      e.target.closest(
+        ".nuance-child"
+      );
+
+    if (!row) {
+      return;
+    }
+
+    const video =
+      document.querySelector(
+        "video"
+      );
+
+    if (!video) {
+      return;
+    }
+
+    video.currentTime =
+      Number(
+        row.dataset.start
+      ) / 1000;
+
+  }
+);
+
 document.body.append(
   tooltip
 );
@@ -54,6 +84,16 @@ let sentences = [];
 
 let timeline = [];
 let markerContainer = null;
+
+let hoveredItem = null;
+
+let hoveredSubtitle = null;
+
+let hoveredEndSubtitle = null;
+
+let tooltipUpdateInterval = null;
+
+
 
 let translated = false;
 
@@ -192,27 +232,25 @@ function createMarker(
 
   marker.addEventListener(
     "mouseenter",
-    e =>
+    e => {
+
       showTooltip(
         e,
         item,
         subtitle,
         endSubtitle
-      )
+      );
+
+    }
   );
 
   marker.addEventListener(
     "mousemove",
     e => {
 
-      const rect =
-        tooltip.getBoundingClientRect();
+      updateTooltip();
 
-      tooltip.style.left =
-        `${e.clientX - rect.width / 2}px`;
-
-      tooltip.style.top =
-        `${e.clientY - rect.height - 14}px`;
+      moveTooltip(e);
 
     }
   );
@@ -240,11 +278,91 @@ function showTooltip(
   subtitle,
   endSubtitle
 ) {
-  // console.log("SHOW");
+  hoveredItem = item;
+
+  hoveredSubtitle = subtitle;
+
+  hoveredEndSubtitle = endSubtitle;
+
+  clearInterval(
+    tooltipUpdateInterval
+  );
+
+  updateTooltip();
+
+  tooltipUpdateInterval =
+    setInterval(
+      updateTooltip,
+      300
+    );
+
+  tooltip.style.display = "block";
+
+  tooltip.style.opacity = "1";
+
+  moveTooltip(e);
+}
+
+function updateTooltip() {
+
+  if (
+    !hoveredItem ||
+    !hoveredSubtitle ||
+    !hoveredEndSubtitle
+  ) {
+    return;
+  }
+
+  const video =
+    document.querySelector("video");
+
+  if (!video) {
+    return;
+  }
+
+  const currentMs =
+  video.currentTime * 1000;
+
+  const activeChild =
+    hoveredItem.children?.find(
+      child => {
+
+        const start =
+          sentences.find(
+            s =>
+              s.sentenceId ===
+              child.startSentenceId
+          );
+
+        const end =
+          sentences.find(
+            s =>
+              s.sentenceId ===
+              child.endSentenceId
+          );
+
+        if (
+          !start ||
+          !end
+        ) {
+          return false;
+        }
+
+        return (
+          currentMs >=
+            start.start &&
+          currentMs <
+            end.start +
+            end.duration
+        );
+
+      }
+    );
+
   const startTime =
     formatTime(
       Math.floor(
-        subtitle.start / 1000
+        hoveredSubtitle.start / 1000
       )
     );
 
@@ -254,9 +372,9 @@ function showTooltip(
       Math.floor(
 
         (
-          endSubtitle.start +
-          endSubtitle.duration -
-          subtitle.start
+          hoveredEndSubtitle.start +
+          hoveredEndSubtitle.duration -
+          hoveredSubtitle.start
         ) / 1000
 
       )
@@ -265,42 +383,198 @@ function showTooltip(
 
   const level =
     scoreClass(
-      item.investmentScore
+      hoveredItem.investmentScore
     );
+
   const width =
-  `${item.investmentScore / 30 * 100}%`;
+    `${hoveredItem.investmentScore / 30 * 100}%`;
+
+  const childHtml =
+    (hoveredItem.children ?? [])
+
+      .map(child => {
+
+        const start =
+          sentences.find(
+            s =>
+              s.sentenceId ===
+              child.startSentenceId
+          );
+
+        const end =
+          sentences.find(
+            s =>
+              s.sentenceId ===
+              child.endSentenceId
+          );
+
+        if (
+          !start ||
+          !end
+        ) {
+          return "";
+        }
+
+        const active =
+
+          currentMs >=
+          start.start &&
+
+          currentMs <
+          end.start +
+          end.duration;
+
+        const hovered =
+          hoveredChildStart ===
+          start.start;
+
+        return `
+
+<div
+  class="nuance-child
+    ${active ? " nuance-child-active" : ""}
+    ${hovered ? " nuance-child-hover" : ""}"
+  data-start="${start.start}"
+>
+
+  <span class="nuance-child-icon">
+
+    <span
+        class="nuance-child-icon-inner
+        ${active ? "nuance-child-icon-active" : ""}
+        ${hovered && !active ? "nuance-child-icon-hover" : ""}">
+    </span>
+
+</span>
+
+  <span class="nuance-child-label">
+
+    ${child.concept}
+
+  </span>
+
+</div>
+
+`;
+
+      })
+
+      .join("");
+
+  document
+  .querySelectorAll(
+    ".nuance-child-dot"
+  )
+  .forEach(
+    dot =>
+      dot.classList.remove(
+        "nuance-child-dot-active"
+      )
+  );
+
+  if (activeChild) {
+
+    const start =
+      sentences.find(
+        s =>
+          s.sentenceId ===
+          activeChild.startSentenceId
+      );
+
+    document
+      .querySelector(
+        `.nuance-child-dot[data-start="${start.start}"]`
+      )
+      ?.classList.add(
+        "nuance-child-dot-active"
+      );
+
+  }
 
   tooltip.innerHTML = `
-  <div class="nuance-marker-title">
-    ${item.concept}
-  </div>
 
-  <div class="nuance-marker-time">
-    ${startTime} · ${duration}
-  </div>
+<div class="nuance-marker-title">
 
-  <div class="nuance-tooltip-bar nuance-tooltip-bar-${level} style="width:${width}">
-  </div>
-  `;
+${hoveredItem.concept}
 
-  tooltip.style.display = "block";
+</div>
 
-  const rect =
-    tooltip.getBoundingClientRect();
+<div class="nuance-marker-time">
 
-  tooltip.style.left =
-    `${e.clientX - rect.width / 2}px`;
+${startTime} · ${duration}
 
-  tooltip.style.top =
-    `${e.clientY - rect.height - 14}px`;
+</div>
 
-  tooltip.style.opacity = "1";
+<div class="nuance-child-list">
+
+${childHtml}
+
+</div>
+
+<div
+class="
+nuance-tooltip-bar
+nuance-tooltip-bar-${level}
+"
+
+style="width:${width}"
+
+></div>
+
+`;
 
 }
 
-function hideTooltip() {
-  tooltip.style.opacity = "0";
-  tooltip.style.display = "none";
+
+function hideTooltip(){
+
+    clearInterval(
+        tooltipUpdateInterval
+    );
+
+    tooltip.style.display="none";
+
+}
+
+function moveTooltip(e){
+
+    const margin = 12;
+
+    const rect =
+      tooltip.getBoundingClientRect();
+
+    let left =
+      e.clientX -
+      rect.width / 2;
+
+    let top =
+      e.clientY -
+      rect.height -
+      14;
+
+    left = Math.max(
+      margin,
+      Math.min(
+        left,
+        window.innerWidth -
+        rect.width -
+        margin
+      )
+    );
+
+    if(top < margin){
+
+        top =
+          e.clientY + 16;
+
+    }
+
+    tooltip.style.left =
+      `${left}px`;
+
+    tooltip.style.top =
+      `${top}px`;
+
 }
 
 function renderMarkers() {
@@ -358,14 +632,6 @@ function renderMarkers() {
       continue;
     }
 
-    const marker =
-      createMarker(
-        item,
-        subtitle,
-        endSubtitle,
-        video
-      );
-
     const range =
       createRange(
         item,
@@ -374,12 +640,173 @@ function renderMarkers() {
         video
       );
 
+    const marker =
+      createMarker(
+        item,
+        subtitle,
+        endSubtitle,
+        video
+      );
+
     markerContainer.append(
-      marker,
-      range
+      marker, range
     );
 
+    for (const child of item.children ?? []) {
+
+      if (
+          child.startSentenceId ===
+          item.startSentenceId
+      ) continue;
+
+      const dot =
+        createChildDot(
+          item,
+          child,
+          video
+        );
+
+      if(dot){
+
+          markerContainer.appendChild(
+              dot
+          );
+
+      }
+
+    }
+
   }
+
+}
+
+// children dot을 생성하는 함수.
+
+function createChildDot(
+  item,
+  child,
+  video
+) {
+  const subtitle =
+    sentences.find(
+      s =>
+        s.sentenceId ===
+        child.startSentenceId
+    );
+
+  if (!subtitle)
+    return null;
+
+
+  const parentStart =
+    sentences.find(
+      s =>
+        s.sentenceId ===
+        item.startSentenceId
+    );
+
+  const parentEnd =
+    sentences.find(
+      s =>
+        s.sentenceId ===
+        item.endSentenceId
+    );
+
+  const percent =
+    subtitle.start /
+    (video.duration * 1000);
+
+  const dot =
+    document.createElement("div");
+
+  dot.className =
+    "nuance-child-dot";
+
+  dot.style.left =
+    `${percent * 100}%`;
+
+  dot.style.top = '50%';
+
+  dot.dataset.start =
+    subtitle.start;
+
+  dot.title =
+    child.concept;
+
+  dot.addEventListener(
+    "click",
+    e => {
+
+      e.stopPropagation();
+
+      video.currentTime =
+        subtitle.start / 1000;
+
+    }
+  );
+
+  dot.addEventListener(
+    "mouseenter",
+    e => {
+
+      hoveredItem = item;
+
+      hoveredChildStart =
+      subtitle.start;
+
+      showTooltip(
+        e,
+        item,
+        parentStart,
+        parentEnd
+      );
+
+      const row =
+        document.querySelector(
+          `.nuance-child[data-start="${subtitle.start}"]`
+        );
+
+      row?.classList.add(
+        "nuance-child-active"
+      );
+
+    }
+  );
+
+  dot.addEventListener(
+    "mousemove",
+    e => {
+
+      updateTooltip();
+
+      moveTooltip(e);
+
+    }
+  );
+
+  dot.addEventListener(
+    "mouseleave",
+    () => {
+
+      const row =
+        document.querySelector(
+
+          `.nuance-child[data-start="${subtitle.start}"]`
+
+        );
+
+      row?.classList.remove(
+        "nuance-child-active"
+      );
+
+      hoveredChildStart = null;
+      updateTooltip();
+      hideTooltip();
+
+    }
+  );
+
+  return dot;
 
 }
 
@@ -723,210 +1150,6 @@ window.addEventListener("message", async event => {
 // sentenceRebuilder.js
 
 function rebuildSentences(lines) {
-
-  /*
-  // \n 기준으로 subtitle 분리 + 시간 균등 분배
-  const normalized = [];
-
-  for (const line of lines) {
-
-    const parts =
-      line.text
-        .split("\n")
-        .map(text => text.trim())
-        .filter(Boolean);
-
-    const partDuration =
-      Math.floor(
-        line.duration /
-        parts.length
-      );
-
-    parts.forEach(
-      (part, index) => {
-
-        normalized.push({
-
-          id: line.id,
-
-          start:
-            line.start +
-            partDuration * index,
-
-          duration:
-            index === parts.length - 1
-              ? line.duration - partDuration * index
-              : partDuration,
-
-          text: part
-
-        });
-
-      }
-    );
-
-  }
-
-  const sentences = [];
-
-  let current = null;
-
-  function shouldMerge(prev, next) {
-
-    if (!prev || !next) {
-      return false;
-    }
-
-    const prevText =
-      prev.text.trim();
-
-    const nextText =
-      next.text.trim();
-
-    // 이전 문장이 끝났으면 merge 안 함
-    if (/[.?!]["')\]]?$/.test(prevText)) {
-      return false;
-    }
-
-    // 이어지는 경우만 merge
-
-    // 소문자 시작
-    if (/^[a-z]/.test(nextText)) {
-      return true;
-    }
-
-    // 숫자 시작
-    if (/^[0-9]/.test(nextText)) {
-      return true;
-    }
-
-    // 쉼표, 세미콜론
-    if (/^[,;]/.test(nextText)) {
-      return true;
-    }
-
-    // 닫는 괄호
-    if (/^[)\]}]/.test(nextText)) {
-      return true;
-    }
-
-    // 따옴표
-    if (/^["']/.test(nextText)) {
-      return true;
-    }
-
-    // 이어지는 접속사
-    if (
-      /^(and|or|but|because|which|who|whose|that|where|when|while|although|however|therefore|then|so)\b/i.test(
-        nextText
-      )
-    ) {
-      return true;
-    }
-
-    return false;
-
-  }
-
-  for (const line of normalized) {
-
-    const text =
-      line.text.trim();
-
-    if (!text) {
-      continue;
-    }
-
-    if (!current) {
-
-      current = {
-
-        sentenceId:
-          sentences.length,
-
-        subtitleIds: [
-          line.id
-        ],
-
-        start:
-          line.start,
-
-        duration:
-          line.duration,
-
-        text
-
-      };
-
-      continue;
-
-    }
-
-    if (
-      shouldMerge(
-        current,
-        line
-      )
-    ) {
-
-      current.text +=
-        " " + text;
-
-      current.subtitleIds.push(
-        line.id
-      );
-
-      // 문장 길이 갱신
-      current.duration =
-        (line.start + line.duration)
-        - current.start;
-
-    }
-
-    else {
-
-      current.subtitleIds =
-        [...new Set(current.subtitleIds)];
-
-      sentences.push(
-        current
-      );
-
-      current = {
-
-        sentenceId:
-          sentences.length,
-
-        subtitleIds: [
-          line.id
-        ],
-
-        start:
-          line.start,
-
-        duration:
-          line.duration,
-
-        text
-
-      };
-
-    }
-
-  }
-
-  if (current) {
-
-    current.subtitleIds =
-      [...new Set(current.subtitleIds)];
-
-    sentences.push(
-      current
-    );
-
-  }
-    */
-
   const sentences = lines.map(
 
     (subtitle, index) => ({

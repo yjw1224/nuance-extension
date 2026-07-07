@@ -87,6 +87,8 @@ let markerContainer = null;
 
 let hoveredItem = null;
 
+let hoveredChildStart = null;
+
 let hoveredSubtitle = null;
 
 let hoveredEndSubtitle = null;
@@ -505,11 +507,11 @@ ${startTime} · ${duration}
 
 </div>
 
-<div class="nuance-child-list">
+${hoveredItem.children.length > 0 ? `<div class="nuance-child-list">
 
 ${childHtml}
 
-</div>
+</div>` : ``}
 
 <div
 class="

@@ -451,7 +451,7 @@ function updateTooltip() {
 
   <span class="nuance-child-label">
 
-    ${child.concept}
+    ${child.displayName ?? child.concept}
 
   </span>
 
@@ -497,9 +497,17 @@ function updateTooltip() {
 
 <div class="nuance-marker-title">
 
-${hoveredItem.concept}
+  ${hoveredItem.displayName ?? hoveredItem.concept}
 
 </div>
+
+${hoveredItem.displayName ? 
+  `
+  <div class="nuance-marker-original">
+    ${hoveredItem.concept}
+  </div>
+  ` : ''
+}
 
 <div class="nuance-marker-time">
 

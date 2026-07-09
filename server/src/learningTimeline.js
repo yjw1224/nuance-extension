@@ -1,4 +1,5 @@
 import { openai } from "./openai.js";
+import { translateInto } from './language.js'
 
 /** GPT가 핵심 개념을 의미적으로 추출하는 함수 */
 async function generateRawConcepts(
@@ -69,6 +70,10 @@ async function generateRawConcepts(
                       type: "string"
                     },
 
+                    displayName: {
+                      type: "string"
+                    },
+
                     parentConcept: {
                       type: [
                         "string",
@@ -111,6 +116,8 @@ async function generateRawConcepts(
                   required: [
 
                     "concept",
+
+                    "displayName",
 
                     "parentConcept",
 
@@ -173,6 +180,7 @@ Do not infer a broader concept that is not explicitly discussed in the transcrip
 For every extracted concept:
 
 * concept must be a concise noun or noun phrase (1-4 words)
+* Preserve the original capitalization of concept.
 * if the concept is explicitly named in the transcript, use that exact name; otherwise use its canonical name
 * do not replace a specific concept with a broader concept
 * identify the explanation interval that covers the complete explanation of the concept
@@ -180,6 +188,10 @@ For every extracted concept:
 * end the interval when the explanation is complete or the discussion clearly shifts to another main concept
 * identify a parentConcept only when the concept is explained entirely as a subsection of another extracted concept; otherwise return null
 * return null if the concept could reasonably stand as its own lesson
+
+displayName:
+* displayName is the learner-facing name shown in ${translateInto}.
+* Use the natural educational term that native speakers would expect. If none exists, keep the original concept name.
 
 Do not use parentConcept simply because one concept contributes to another.
 
@@ -398,6 +410,9 @@ function mergeParentConcepts(
 
         concept:
           concept.concept,
+
+        displayName:
+          concept.displayName,
 
         startSentenceId:
           concept.startSentenceId,

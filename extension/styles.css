@@ -249,6 +249,22 @@
   height: 12px;
 }
 
+.nuance-marker-original{
+
+    margin-top:1px;
+
+    font-size:10px;
+
+    font-weight:500;
+
+    line-height:1.2;
+
+    letter-spacing:.02em;
+
+    color:rgba(255,255,255,.52);
+
+}
+
 .nuance-tooltip-bar{
 
     margin-top:6px;
@@ -342,6 +358,14 @@
     cursor:pointer;
 
     user-select: none;
+
+    flex:1;
+
+    overflow:hidden;
+
+    white-space:nowrap;
+
+    text-overflow:ellipsis;
 }
 
 .nuance-child-active{

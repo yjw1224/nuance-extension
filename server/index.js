@@ -88,21 +88,21 @@ app.post("/translate", async (req, res) => {
 
     const t1 = Date.now();
 
-    // const translationPromise =
-    //   translateTranscript(
-    //     filteredSubtitles,
-    //     context,
-    //     chunk => {
+    const translationPromise =
+      translateTranscript(
+        filteredSubtitles,
+        context,
+        chunk => {
 
-    //       res.write(
-    //         JSON.stringify({
-    //           type: "translation",
-    //           ...chunk
-    //         }) + "\n\n"
-    //       );
+          res.write(
+            JSON.stringify({
+              type: "translation",
+              ...chunk
+            }) + "\n\n"
+          );
 
-    //     }
-    //   );
+        }
+      );
 
     let learningPromise = null;
 
@@ -117,21 +117,21 @@ app.post("/translate", async (req, res) => {
 
     }
 
-    // const {
+    const {
 
-    //   translation,
+      translation,
 
-    //   usage:
-    //     translationUsage,
+      usage:
+        translationUsage,
 
-    //   chunkCount,
+      chunkCount,
 
-    //   ttfs,
+      ttfs,
 
-    //   retryCount
+      retryCount
 
-    // } =
-    // await translationPromise;
+    } =
+    await translationPromise;
 
     const translationMs =
       Date.now() - t1;
@@ -220,7 +220,7 @@ app.post("/translate", async (req, res) => {
     );
 
     const totalTokens = contextUsage.input_tokens + contextUsage.output_tokens
-    // + translationUsage.inputTokens + translationUsage.outputTokens
+    + translationUsage.inputTokens + translationUsage.outputTokens
     + learningUsage.input_tokens + learningUsage.output_tokens;
     const videoType = "Edu";
 
@@ -273,86 +273,86 @@ app.post("/translate", async (req, res) => {
             ) / conceptCount
           ).toFixed(2);
 
-    // saveBenchmark({
+    saveBenchmark({
 
-    //   // ===== Video =====
+      // ===== Video =====
 
-    //   videoType,
+      videoType,
 
-    //   videoId,
+      videoId,
 
-    //   durationSec,
+      durationSec,
 
-    //   rawSubtitleCount:
-    //     sentenceSubtitles.length,
+      rawSubtitleCount:
+        sentenceSubtitles.length,
 
-    //   processedSubtitleCount:
-    //     filteredSubtitles.length,
+      processedSubtitleCount:
+        filteredSubtitles.length,
 
-    //   chunkCount,
+      chunkCount,
 
-    //   // ===== Model =====
+      // ===== Model =====
 
-    //   contextModel:
-    //     process.env.OPENAI_CONTEXT_MODEL,
+      contextModel:
+        process.env.OPENAI_CONTEXT_MODEL,
 
-    //   translationModel:
-    //     process.env.OPENAI_MODEL,
+      translationModel:
+        process.env.OPENAI_MODEL,
 
-    //   learningModel:
-    //     process.env.OPENAI_LEARNING_MODEL,
+      learningModel:
+        process.env.OPENAI_LEARNING_MODEL,
 
-    //   // ===== Token =====
+      // ===== Token =====
 
-    //   contextInputTokens:
-    //     contextUsage.input_tokens,
+      contextInputTokens:
+        contextUsage.input_tokens,
 
-    //   contextOutputTokens:
-    //     contextUsage.output_tokens,
+      contextOutputTokens:
+        contextUsage.output_tokens,
 
-    //   translationInputTokens:
-    //     translationUsage.inputTokens,
+      translationInputTokens:
+        translationUsage.inputTokens,
 
-    //   translationOutputTokens:
-    //     translationUsage.outputTokens,
+      translationOutputTokens:
+        translationUsage.outputTokens,
 
-    //   learningTimelineInputTokens:
-    //     learningUsage.input_tokens,
+      learningTimelineInputTokens:
+        learningUsage.input_tokens,
 
-    //   learningTimelineOutputTokens:
-    //     learningUsage.output_tokens,
+      learningTimelineOutputTokens:
+        learningUsage.output_tokens,
 
-    //   totalTokens,
+      totalTokens,
 
-    //   // ===== Performance =====
+      // ===== Performance =====
 
-    //   contextMs,
+      contextMs,
 
-    //   translationMs,
+      translationMs,
 
-    //   ttfs,
+      ttfs,
 
-    //   learningMs,
+      learningMs,
 
-    //   totalMs,
+      totalMs,
 
-    //   // ===== Learning Timeline =====
+      // ===== Learning Timeline =====
 
-    //   conceptCount,
+      conceptCount,
 
-    //   averageInvestmentScore,
+      averageInvestmentScore,
 
-    //   highestInvestmentScore,
+      highestInvestmentScore,
 
-    //   conceptDensity,
+      conceptDensity,
 
-    //   averageSegmentLength,
+      averageSegmentLength,
 
-    //   // ===== Reliability =====
+      // ===== Reliability =====
 
-    //   retryCount
+      retryCount
 
-    // });
+    });
 
     console.table({
 
@@ -367,15 +367,15 @@ app.post("/translate", async (req, res) => {
 
       contextMs,
 
-      // translationMs,
+      translationMs,
 
-      // ttfs,
+      ttfs,
 
       learningMs,
 
       totalMs,
 
-      // retryCount,
+      retryCount,
 
       totalTokens
 

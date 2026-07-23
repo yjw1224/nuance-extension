@@ -1,0 +1,13 @@
+id,stateId,level,name,coreDefinition
+information_0,information,0,Missing,"학습에 필요한 핵심 정보를 아직 보유하지 못해, 현재 설명을 이해하는 데 필요한 기반 자체가 부족한 상태."
+information_1,information,1,Recognizing,"학습에 필요한 정보를 어느 정도 알고 있지만, 이를 즉시 활용하지 못하고 지속적인 회상과 확인이 필요한 상태."
+information_2,information,2,Available,"학습에 필요한 핵심 정보를 안정적으로 보유하고 있으며, 필요할 때 즉시 활용할 수 있는 상태."
+information_3,information,3,Stable,"학습에 필요한 핵심 정보가 안정적인 지식으로 정착되어 있으며, 다양한 맥락에서도 지속적으로 접근하고 활용할 수 있는 상태."
+reasoning_0,reasoning,0,Disconnected,"필요한 정보를 가지고 있더라도, 그 사이의 논리적 관계를 형성하지 못해 설명의 흐름을 따라가지 못하는 상태."
+reasoning_1,reasoning,1,Local,"인접한 정보나 설명 사이의 논리적 관계는 이해할 수 있지만, 전체적인 논리 구조까지 통합하지는 못하는 상태."
+reasoning_2,reasoning,2,Integrated,"설명의 전체 논리 구조를 이해하고 각 단계의 관계를 일관되게 연결할 수 있는 상태."
+reasoning_3,reasoning,3,Predictive,"설명의 현재 논리를 이해하는 것을 넘어, 이후 전개될 추론과 논리 구조를 스스로 예측하며 이해를 확장하는 상태."
+construction_0,construction,0,Fragmented,"이해한 내용을 하나의 지식 구조로 조직하지 못하여, 개별 정보가 분절된 상태로 남아 있는 상태."
+construction_1,construction,1,Organizing,"이해한 내용을 하나의 지식 구조로 조직하기 시작하지만, 아직 안정적으로 통합되지는 않은 상태."
+construction_2,construction,2,Integrated,"이해한 내용을 자신의 지식 구조 안에 안정적으로 통합하여, 일관된 개념 체계로 유지할 수 있는 상태."
+construction_3,construction,3,Transferable,"이해한 내용을 일반적인 정신 모델로 추상화하여, 새로운 문제와 다양한 맥락에도 유연하게 적용할 수 있는 상태."

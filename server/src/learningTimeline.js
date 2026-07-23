@@ -109,6 +109,13 @@ async function generateRawConcepts(
                     reason: {
                       type:
                         "string"
+                    },
+
+                    learningRole: {
+                      type: [
+                        "string",
+                        "null"
+                      ]
                     }
 
                   },
@@ -131,7 +138,9 @@ async function generateRawConcepts(
 
                     "abstraction",
 
-                    "reason"
+                    "reason",
+
+                    "learningRole"
 
                   ]
 
@@ -206,6 +215,13 @@ Do NOT extract:
 * examples
 * conclusions
 * concepts that summarize previous explanations instead of enabling later understanding
+
+learningRole:
+* Only concepts with parentConcept = null require a learningRole.
+* learningRole is one concise sentence describing the role this concept plays in understanding the rest of the video.
+* Do not define or explain the concept itself.
+* Write naturally in ${translateInto}.
+* Keep it under 15 words.
 
 Scores
 

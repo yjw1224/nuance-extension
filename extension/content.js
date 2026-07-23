@@ -515,6 +515,16 @@ ${startTime} · ${duration}
 
 </div>
 
+${
+hoveredItem.learningRole ?
+`
+<div class="nuance-marker-role">
+    ${hoveredItem.learningRole}
+</div>
+`
+: ""
+}
+
 ${hoveredItem.children.length > 0 ? `<div class="nuance-child-list">
 
 ${childHtml}

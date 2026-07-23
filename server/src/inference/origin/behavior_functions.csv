@@ -1,0 +1,7 @@
+id,name,description,goal,primaryState,secondaryState
+explore,Explore,Search for new information,Acquire new information,information,reasoning
+verify,Verify,Re-check or confirm existing understanding,Validate understanding,reasoning,information
+process,Process,Internally interpret and process information,Interpret information,reasoning,construction
+connect,Connect,Relate multiple concepts and integrate knowledge,Build conceptual relationships,reasoning,construction
+externalize,Externalize,Express understanding externally through actions or artifacts,Express understanding,construction,reasoning
+monitor,Monitor,Assess and regulate one's own understanding,Self-monitor learning,construction,reasoning

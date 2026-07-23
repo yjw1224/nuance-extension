@@ -1,0 +1,76 @@
+{
+  "undefined": [
+    {
+      "bfId": "explore",
+      "role": 3
+    },
+    {
+      "bfId": "explore",
+      "role": 1
+    },
+    {
+      "bfId": "explore",
+      "role": 2
+    },
+    {
+      "bfId": "verify",
+      "role": 3
+    },
+    {
+      "bfId": "verify",
+      "role": 3
+    },
+    {
+      "bfId": "verify",
+      "role": 2
+    },
+    {
+      "bfId": "process",
+      "role": 1
+    },
+    {
+      "bfId": "process",
+      "role": 3
+    },
+    {
+      "bfId": "process",
+      "role": 2
+    },
+    {
+      "bfId": "connect",
+      "role": 1
+    },
+    {
+      "bfId": "connect",
+      "role": 2
+    },
+    {
+      "bfId": "connect",
+      "role": 3
+    },
+    {
+      "bfId": "externalize",
+      "role": 1
+    },
+    {
+      "bfId": "externalize",
+      "role": 2
+    },
+    {
+      "bfId": "externalize",
+      "role": 3
+    },
+    {
+      "bfId": "monitor",
+      "role": 1
+    },
+    {
+      "bfId": "monitor",
+      "role": 3
+    },
+    {
+      "bfId": "monitor",
+      "role": 2
+    }
+  ]
+}

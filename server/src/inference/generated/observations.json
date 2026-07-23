@@ -1,0 +1,194 @@
+{
+  "seekBackward": {
+    "name": "Seek Backward",
+    "category": "Timeline",
+    "type": "Raw Event",
+    "description": "사용자가 현재 재생 위치보다 이전 시점으로 탐색(Seek)한 이벤트."
+  },
+  "pauseDuration": {
+    "name": "Pause Duration",
+    "category": "Derived",
+    "type": "Derived Feature",
+    "description": "Pause 이벤트가 지속된 시간을 계산한 파생 지표."
+  },
+  "replayCount": {
+    "name": "Replay Count",
+    "category": "Derived",
+    "type": "Derived Feature",
+    "description": "동일한 영상 구간을 Replay한 횟수를 계산한 파생 지표."
+  },
+  "returnTime": {
+    "name": "Return Time",
+    "category": "Focus",
+    "type": "Derived Feature",
+    "description": "사용자가 영상에서 이탈한 후 다시 돌아오기까지 걸린 시간을 계산한 파생 지표."
+  },
+  "transcriptOpen": {
+    "name": "Transcript Open",
+    "category": "Transcript",
+    "type": "Raw Event",
+    "description": "사용자가 영상의 Transcript를 연 이벤트."
+  },
+  "transcriptScroll": {
+    "name": "Transcript Scroll",
+    "category": "Transcript",
+    "type": "Raw Event",
+    "description": "사용자가 Transcript Panel을 스크롤하여 다른 구간의 자막을 탐색한 행동."
+  },
+  "transcriptClick": {
+    "name": "Transcript Click",
+    "category": "Transcript",
+    "type": "Raw Event",
+    "description": "사용자가 Transcript의 특정 문장을 선택한 행동."
+  },
+  "timestampClick": {
+    "name": "Timestamp Click",
+    "category": "Video Info",
+    "type": "Raw Event",
+    "description": "사용자가 Timestamp를 클릭하여 해당 재생 위치로 이동한 행동."
+  },
+  "conceptOpen": {
+    "name": "Concept Open",
+    "category": "Nuance",
+    "type": "Raw Event",
+    "description": "사용자가 Concept Panel 또는 Concept Card를 열어 개념 설명을 확인한 행동."
+  },
+  "conceptNavigation": {
+    "name": "Concept Navigation",
+    "category": "Nuance",
+    "type": "Raw Event",
+    "description": "사용자가 하나의 Concept에서 다른 Concept로 이동한 행동."
+  },
+  "backToConcept": {
+    "name": "Back to Concept",
+    "category": "Nuance",
+    "type": "Raw Event",
+    "description": "사용자가 이전에 열었던 Concept로 다시 돌아간 행동."
+  },
+  "seek": {
+    "name": "Seek",
+    "category": "Timeline",
+    "type": "Raw Event",
+    "description": "사용자가 재생 위치를 다른 시점으로 이동한 이벤트."
+  },
+  "replay": {
+    "name": "Replay",
+    "category": "Timeline",
+    "type": "Derived Feature",
+    "description": "사용자가 이전에 재생한 구간을 다시 재생한 이벤트."
+  },
+  "hoverDuration": {
+    "name": "Hover Duration",
+    "category": "Mouse",
+    "type": "Derived Feature",
+    "description": "사용자가 특정 UI 요소 위에 머문 시간을 계산한 파생 지표."
+  },
+  "conceptReadingTime": {
+    "name": "Concept Reading Time",
+    "category": "Nuance",
+    "type": "Derived Feature",
+    "description": "사용자가 Concept를 읽은 시간을 계산한 파생 지표."
+  },
+  "conceptRevisitCount": {
+    "name": "Concept Revisit Count",
+    "category": "Nuance",
+    "type": "Derived Feature",
+    "description": "동일한 Concept를 반복해서 방문한 횟수를 계산한 파생 지표."
+  },
+  "backwardRatio": {
+    "name": "Backward Ratio",
+    "category": "Timeline",
+    "type": "Derived Feature",
+    "description": "전체 Seek 중 이전 시점으로 이동한 Seek의 비율을 계산한 파생 지표."
+  },
+  "transcriptSearch": {
+    "name": "Transcript Search",
+    "category": "Transcript",
+    "type": "Raw Event",
+    "description": "사용자가 Transcript 검색 기능을 사용한 이벤트."
+  },
+  "transcriptSelection": {
+    "name": "Transcript Selection",
+    "category": "Transcript",
+    "type": "Raw Event",
+    "description": "사용자가 Transcript의 일부 텍스트를 선택한 이벤트."
+  },
+  "externalLinkClick": {
+    "name": "External Link Click",
+    "category": "Video Info",
+    "type": "Raw Event",
+    "description": "사용자가 Video Info에 포함된 외부 링크를 클릭한 이벤트."
+  },
+  "conceptSearch": {
+    "name": "Concept Search",
+    "category": "Nuance",
+    "type": "Raw Event",
+    "description": "사용자가 Concept 검색 기능을 사용한 이벤트."
+  },
+  "chatQuestion": {
+    "name": "Chat Question",
+    "category": "Nuance",
+    "type": "Raw Event",
+    "description": "사용자가 Nuance Chat에 질문을 전송한 이벤트."
+  },
+  "averagePauseDuration": {
+    "name": "Average Pause Duration",
+    "category": "Derived",
+    "type": "Derived Feature",
+    "description": "Pause 이벤트의 평균 지속 시간을 계산한 파생 지표."
+  },
+  "resumeDelay": {
+    "name": "Resume Delay",
+    "category": "Derived",
+    "type": "Derived Feature",
+    "description": "Pause 이후 재생을 다시 시작하기까지의 시간을 계산한 파생 지표."
+  },
+  "tooltipReadingTime": {
+    "name": "Tooltip Reading Time",
+    "category": "Derived",
+    "type": "Derived Feature",
+    "description": "Tooltip이 표시된 상태에서 사용자가 머문 시간을 계산한 파생 지표."
+  },
+  "commentReply": {
+    "name": "Comment Reply",
+    "category": "Comments",
+    "type": "Raw Event",
+    "description": "사용자가 댓글에 답글을 작성한 이벤트."
+  },
+  "segmentDwellTime": {
+    "name": "Segment Dwell Time",
+    "category": "Timeline",
+    "type": "Derived Feature",
+    "description": "사용자가 특정 Timeline Segment에 머문 시간."
+  },
+  "windowBlur": {
+    "name": "Window Blur",
+    "category": "Focus",
+    "type": "Raw Event",
+    "description": "브라우저 Window가 Focus를 잃은 이벤트."
+  },
+  "tabHidden": {
+    "name": "Tab Hidden",
+    "category": "Focus",
+    "type": "Raw Event",
+    "description": "현재 브라우저 탭이 Hidden 상태로 전환된 이벤트."
+  },
+  "browserMinimized": {
+    "name": "Browser Minimized",
+    "category": "Focus",
+    "type": "Raw Event",
+    "description": "브라우저가 최소화된 이벤트."
+  },
+  "tabSwitch": {
+    "name": "Tab Switch",
+    "category": "PiP",
+    "type": "Raw Event",
+    "description": "사용자가 현재 브라우저 탭에서 다른 탭으로 전환한 이벤트."
+  },
+  "windowSwitch": {
+    "name": "Window Switch",
+    "category": "PiP",
+    "type": "Raw Event",
+    "description": "사용자가 현재 활성 Window를 다른 Window로 전환한 이벤트."
+  }
+}

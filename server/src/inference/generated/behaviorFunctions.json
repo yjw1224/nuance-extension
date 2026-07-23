@@ -1,0 +1,44 @@
+{
+  "explore": {
+    "name": "Explore",
+    "description": "Search for new information",
+    "goal": "Acquire new information",
+    "primaryState": "information",
+    "secondaryState": "reasoning"
+  },
+  "verify": {
+    "name": "Verify",
+    "description": "Re-check or confirm existing understanding",
+    "goal": "Validate understanding",
+    "primaryState": "reasoning",
+    "secondaryState": "information"
+  },
+  "process": {
+    "name": "Process",
+    "description": "Internally interpret and process information",
+    "goal": "Interpret information",
+    "primaryState": "reasoning",
+    "secondaryState": "construction"
+  },
+  "connect": {
+    "name": "Connect",
+    "description": "Relate multiple concepts and integrate knowledge",
+    "goal": "Build conceptual relationships",
+    "primaryState": "reasoning",
+    "secondaryState": "construction"
+  },
+  "externalize": {
+    "name": "Externalize",
+    "description": "Express understanding externally through actions or artifacts",
+    "goal": "Express understanding",
+    "primaryState": "construction",
+    "secondaryState": "reasoning"
+  },
+  "monitor": {
+    "name": "Monitor",
+    "description": "Assess and regulate one's own understanding",
+    "goal": "Self-monitor learning",
+    "primaryState": "construction",
+    "secondaryState": "reasoning"
+  }
+}

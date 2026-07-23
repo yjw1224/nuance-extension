@@ -1,0 +1,281 @@
+{
+  "seekBackward": [
+    {
+      "bfId": "verify",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "explore",
+      "role": 2,
+      "evidence": 1
+    }
+  ],
+  "pauseDuration": [
+    {
+      "bfId": "process",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "monitor",
+      "role": 2,
+      "evidence": 2
+    }
+  ],
+  "replayCount": [
+    {
+      "bfId": "verify",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "connect",
+      "role": 2,
+      "evidence": 2
+    }
+  ],
+  "returnTime": [
+    {
+      "bfId": "monitor",
+      "role": 3,
+      "evidence": 3
+    }
+  ],
+  "transcriptOpen": [
+    {
+      "bfId": "explore",
+      "role": 3,
+      "evidence": 3
+    }
+  ],
+  "transcriptScroll": [
+    {
+      "bfId": "explore",
+      "role": 3,
+      "evidence": 3
+    }
+  ],
+  "transcriptClick": [
+    {
+      "bfId": "explore",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "verify",
+      "role": 2,
+      "evidence": 2
+    }
+  ],
+  "timestampClick": [
+    {
+      "bfId": "explore",
+      "role": 3,
+      "evidence": 3
+    }
+  ],
+  "conceptOpen": [
+    {
+      "bfId": "explore",
+      "role": 3,
+      "evidence": 3
+    }
+  ],
+  "conceptNavigation": [
+    {
+      "bfId": "connect",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "explore",
+      "role": 2,
+      "evidence": 2
+    }
+  ],
+  "backToConcept": [
+    {
+      "bfId": "verify",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "connect",
+      "role": 2,
+      "evidence": 2
+    }
+  ],
+  "seek": [
+    {
+      "bfId": "explore",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "verify",
+      "role": 2,
+      "evidence": 2
+    }
+  ],
+  "replay": [
+    {
+      "bfId": "verify",
+      "role": 3,
+      "evidence": 3
+    }
+  ],
+  "hoverDuration": [
+    {
+      "bfId": "process",
+      "role": 3,
+      "evidence": 2
+    },
+    {
+      "bfId": "explore",
+      "role": 2,
+      "evidence": 1
+    }
+  ],
+  "conceptReadingTime": [
+    {
+      "bfId": "process",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "connect",
+      "role": 2,
+      "evidence": 1
+    }
+  ],
+  "conceptRevisitCount": [
+    {
+      "bfId": "verify",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "connect",
+      "role": 2,
+      "evidence": 2
+    }
+  ],
+  "backwardRatio": [
+    {
+      "bfId": "verify",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "explore",
+      "role": 2,
+      "evidence": 1
+    }
+  ],
+  "transcriptSearch": [
+    {
+      "bfId": "explore",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "verify",
+      "role": 2,
+      "evidence": 1
+    }
+  ],
+  "transcriptSelection": [
+    {
+      "bfId": "externalize",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "explore",
+      "role": 2,
+      "evidence": 1
+    }
+  ],
+  "extenalLinkClick": [
+    {
+      "bfId": "explore",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "connect",
+      "role": 2,
+      "evidence": 1
+    }
+  ],
+  "conceptSearch": [
+    {
+      "bfId": "explore",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "connect",
+      "role": 2,
+      "evidence": 2
+    },
+    {
+      "bfId": "verify",
+      "role": 2,
+      "evidence": 1
+    }
+  ],
+  "chatQuestion": [
+    {
+      "bfId": "externalize",
+      "role": 3,
+      "evidence": 3
+    }
+  ],
+  "averagePauseDuration": [
+    {
+      "bfId": "process",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "monitor",
+      "role": 2,
+      "evidence": 2
+    }
+  ],
+  "resumeDelay": [
+    {
+      "bfId": "process",
+      "role": 3,
+      "evidence": 3
+    },
+    {
+      "bfId": "monitor",
+      "role": 2,
+      "evidence": 2
+    }
+  ],
+  "tooltipReadingTime": [
+    {
+      "bfId": "process",
+      "role": 3,
+      "evidence": 3
+    }
+  ],
+  "commentReply": [
+    {
+      "bfId": "externalize",
+      "role": 3,
+      "evidence": 3
+    }
+  ],
+  "segmentDwellTime": [
+    {
+      "bfId": "process",
+      "role": 3,
+      "evidence": 3
+    }
+  ]
+}

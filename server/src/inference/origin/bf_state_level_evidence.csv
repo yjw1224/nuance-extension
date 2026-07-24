@@ -11,7 +11,6 @@ explore,construction,0,medium
 explore,construction,1,medium
 explore,construction,2,low
 explore,construction,3,none
-
 verify,information,0,low
 verify,information,1,high
 verify,information,2,medium
@@ -24,7 +23,6 @@ verify,construction,0,low
 verify,construction,1,medium
 verify,construction,2,medium
 verify,construction,3,low
-
 process,information,0,low
 process,information,1,medium
 process,information,2,medium
@@ -37,7 +35,6 @@ process,construction,0,medium
 process,construction,1,high
 process,construction,2,medium
 process,construction,3,low
-
 connect,information,0,none
 connect,information,1,low
 connect,information,2,medium
@@ -50,7 +47,6 @@ connect,construction,0,medium
 connect,construction,1,high
 connect,construction,2,high
 connect,construction,3,medium
-
 externalize,information,0,none
 externalize,information,1,low
 externalize,information,2,medium
@@ -63,7 +59,6 @@ externalize,construction,0,low
 externalize,construction,1,high
 externalize,construction,2,high
 externalize,construction,3,high
-
 monitor,information,0,low
 monitor,information,1,medium
 monitor,information,2,medium

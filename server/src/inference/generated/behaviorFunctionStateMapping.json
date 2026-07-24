@@ -1,75 +1,85 @@
 {
-  "undefined": [
+  "explore": [
     {
-      "bfId": "explore",
+      "stateId": "information",
       "role": 3
     },
     {
-      "bfId": "explore",
+      "stateId": "reasoning",
       "role": 1
     },
     {
-      "bfId": "explore",
+      "stateId": "construction",
       "role": 2
-    },
+    }
+  ],
+  "verify": [
     {
-      "bfId": "verify",
+      "stateId": "information",
       "role": 3
     },
     {
-      "bfId": "verify",
+      "stateId": "reasoning",
       "role": 3
     },
     {
-      "bfId": "verify",
+      "stateId": "construction",
       "role": 2
-    },
+    }
+  ],
+  "process": [
     {
-      "bfId": "process",
+      "stateId": "information",
       "role": 1
     },
     {
-      "bfId": "process",
+      "stateId": "reasoning",
       "role": 3
     },
     {
-      "bfId": "process",
+      "stateId": "construction",
       "role": 2
-    },
+    }
+  ],
+  "connect": [
     {
-      "bfId": "connect",
+      "stateId": "information",
       "role": 1
     },
     {
-      "bfId": "connect",
+      "stateId": "reasoning",
       "role": 2
     },
     {
-      "bfId": "connect",
+      "stateId": "construction",
       "role": 3
-    },
+    }
+  ],
+  "externalize": [
     {
-      "bfId": "externalize",
+      "stateId": "information",
       "role": 1
     },
     {
-      "bfId": "externalize",
+      "stateId": "reasoning",
       "role": 2
     },
     {
-      "bfId": "externalize",
+      "stateId": "construction",
       "role": 3
-    },
+    }
+  ],
+  "monitor": [
     {
-      "bfId": "monitor",
+      "stateId": "information",
       "role": 1
     },
     {
-      "bfId": "monitor",
+      "stateId": "reasoning",
       "role": 3
     },
     {
-      "bfId": "monitor",
+      "stateId": "construction",
       "role": 2
     }
   ]

@@ -89,16 +89,15 @@ async function build(config) {
   console.log(`✓ ${config.output}`);
 }
 
-function compileMapping(rows) {
+function compileObservationBehaviorMapping(rows) {
   const result = {};
 
   for (const row of rows) {
-    if (!row.observationId?.trim() && !row.bfId?.trim()) {
-        if (!row.bfId?.trim())
-            throw new Error(`Missing bfId in "${row.observationId}"`);
-        else
-            throw new Error("Missing observationId");
-    }
+    if (!row.observationId?.trim())
+      throw new Error("Missing observationId");
+
+    if (!row.bfId?.trim())
+      throw new Error(`Missing bfId in "${row.observationId}"`);
 
     if (!result[row.observationId]) {
       result[row.observationId] = [];
@@ -114,7 +113,30 @@ function compileMapping(rows) {
   return result;
 }
 
-function compileEvidenceMapping(rows) {
+function compileBehaviorStateMapping(rows) {
+  const result = {};
+
+  for (const row of rows) {
+    if (!row.bfId?.trim())
+      throw new Error("Missing bfId");
+
+    if (!row.stateId?.trim())
+      throw new Error(`Missing stateId in "${row.bfId}"`);
+
+    if (!result[row.bfId]) {
+      result[row.bfId] = [];
+    }
+
+    result[row.bfId].push({
+      stateId: row.stateId,
+      role: row.role,
+    });
+  }
+
+  return result;
+}
+
+function compileBehaviorStateEvidence(rows) {
   const result = {};
 
   for (const row of rows) {
@@ -186,46 +208,49 @@ async function main() {
     for (const config of KNOWLEDGE_FILES) {
         await build(config);
     }
-
+    
+    // observations -> behavior function mapping
     await build({
-    input: "observations_bf_mapping.csv",
-    output: "observationBehaviorMapping.json",
+      input: "observations_bf_mapping.csv",
+      output: "observationBehaviorMapping.json",
 
-    preprocess: rows =>
+      preprocess: rows =>
         rows.map(row => ({
-        ...row,
-        role: ROLE_MAP[row.role.toLowerCase()],
-        evidence: EVIDENCE_MAP[row.evidence.toLowerCase()],
+          ...row,
+          role: ROLE_MAP[row.role.toLowerCase()],
+          evidence: EVIDENCE_MAP[row.evidence.toLowerCase()],
         })),
 
-    compiler: compileMapping,
+      compiler: compileObservationBehaviorMapping,
     });
 
+    // behavior function -> understanding states mapping
     await build({
-    input: "bf_state_mapping.csv",
-    output: "behaviorFunctionStateMapping.json",
+      input: "bf_state_mapping.csv",
+      output: "behaviorFunctionStateMapping.json",
 
-    preprocess: rows =>
+      preprocess: rows =>
         rows.map(row => ({
-        ...row,
-        role: ROLE_MAP[row.role.toLowerCase()],
+          ...row,
+          role: ROLE_MAP[row.role.toLowerCase()],
         })),
 
-    compiler: compileMapping,
+      compiler: compileBehaviorStateMapping,
     });
 
+    // behavior function -> state level evidence mapping
     await build({
-    input: "bf_state_level_evidence.csv",
-    output: "behaviorFunctionStateEvidence.json",
+      input: "bf_state_level_evidence.csv",
+      output: "behaviorFunctionStateEvidence.json",
 
-    preprocess: rows =>
+      preprocess: rows =>
         rows.map(row => ({
-        ...row,
-        level: Number(row.level),
-        evidence: EVIDENCE_MAP[row.evidence.toLowerCase()],
+          ...row,
+          level: Number(row.level),
+          evidence: EVIDENCE_MAP[row.evidence.toLowerCase()],
         })),
 
-    compiler: compileEvidenceMapping,
+      compiler: compileBehaviorStateEvidence,
     });
 
     console.log("\nKnowledge build completed.");

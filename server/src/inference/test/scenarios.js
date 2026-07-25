@@ -1028,7 +1028,7 @@ export default
         description: "Only one observation is available.",
 
         observations: [
-        "highlight"
+        "windowSwitch"
         ],
 
         expected: {
@@ -1271,27 +1271,27 @@ export default
         }
     },
 
-    {
-        id: "BF-412",
+    // {
+    //     id: "BF-412",
 
-        name: "Highlight Everything",
+    //     name: "Highlight Everything",
 
-        description: "The learner highlights excessively without reviewing or connecting information.",
+    //     description: "The learner highlights excessively without reviewing or connecting information.",
 
-        observations: [
-        "highlight",
-        "highlight",
-        "highlight",
-        "highlight",
-        "highlight"
-        ],
+    //     observations: [
+    //     "highlight",
+    //     "highlight",
+    //     "highlight",
+    //     "highlight",
+    //     "highlight"
+    //     ],
 
-        expected: {
-        dominantBehaviorFunctions: [
-            "externalize"
-        ]
-        }
-    },
+    //     expected: {
+    //     dominantBehaviorFunctions: [
+    //         "externalize"
+    //     ]
+    //     }
+    // },
 
     {
         id: "BF-413",

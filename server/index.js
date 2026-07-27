@@ -1,6 +1,9 @@
 import express from "express";
+import inferenceRouter from "./routes/inference.js";
 import dotenv from "dotenv";
 import cors from "cors";
+
+
 import { generateContext } from "./src/context.js";
 import { translateTranscript } from "./src/translator.js";
 import { saveBenchmark }
@@ -25,6 +28,8 @@ app.use(cors({
 app.use(express.json({
   limit: "10mb"
 }));
+
+app.use("/inference", inferenceRouter);
 
 app.post("/translate", async (req, res) => {
 

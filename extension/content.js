@@ -10,6 +10,227 @@ script.src =
 script.onload =
   () => script.remove();
 
+// -------------------------------------
+// events
+// -------------------------------------
+
+// observation-buffer.js
+
+class ObservationBuffer {
+    constructor() {
+        // Event Observation (중복 제거)
+        this.events = [];
+
+        // Derived Features
+        this.features = {
+            averagePauseDuration: 0,
+            backwardRatio: 0,
+        };
+
+        // 내부 계산용
+        this.pauseDurations = [];
+        this.seekCount = 0;
+        this.seekBackwardCount = 0;
+
+        // debounce
+        this.flushTimer = null;
+    }
+
+    /*
+     * ===========================
+     * Event
+     * ===========================
+     */
+
+    addEvent(type, data = {}) {
+        this.events.push({
+            type,
+            ts: Date.now(),
+            ...data
+        });
+
+        console.log("[Observation]", name);
+
+        this.scheduleFlush();
+    }
+
+    /*
+     * ===========================
+     * Feature
+     * ===========================
+     */
+
+    addPauseDuration(duration) {
+        this.pauseDurations.push(duration);
+
+        const sum = this.pauseDurations.reduce((a, b) => a + b, 0);
+
+        this.features.averagePauseDuration =
+            Math.round(sum / this.pauseDurations.length);
+
+        console.log(
+            "[Feature] averagePauseDuration =",
+            this.features.averagePauseDuration
+        );
+    }
+
+    addBackwardRatio(isBackward) {
+      this.seekCount++;
+
+      if(isBackward) this.seekBackwardCount++;
+
+      this.features.backwardRatio = this.seekBackwardCount / this.seekCount;
+
+      console.log(
+          "[Feature] backwardRatio =",
+          this.features.backwardRatio
+      );
+    }
+
+    /*
+     * ===========================
+     * Debounce
+     * ===========================
+     */
+
+    scheduleFlush() {
+        clearTimeout(this.flushTimer);
+
+        this.flushTimer = setTimeout(() => {
+            this.flush();
+        }, 5000); // 5초 동안 조용하면 Flush
+    }
+
+    /*
+     * ===========================
+     * Flush
+     * ===========================
+     */
+
+    async flush() {
+
+        if (
+            this.events.size === 0 &&
+            this.pauseDurations.length === 0
+        ) {
+            return;
+        }
+
+        const payload = {
+            events: [...this.events],
+            features: {
+                ...this.features
+            }
+        };
+
+        console.log("========== FLUSH ==========");
+        console.log(payload);
+
+        // TODO
+        // POST(payload)
+        const result = await fetch("https://opulent-space-trout-494466pg9x5cxwv-3000.app.github.dev/inference", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(this.events)
+        }).then((res) => {
+          console.log(res.text());
+        })
+
+        // Event만 초기화
+        this.events = [];
+    }
+}
+
+const observationBuffer = new ObservationBuffer();
+
+async function waitForVideo() {
+  return new Promise((resolve) => {
+      const interval = setInterval(() => {
+          const video = document.querySelector("video");
+
+          if (video) {
+              clearInterval(interval);
+              resolve(video);
+          }
+      }, 300);
+  });
+}
+
+let isPause = false;
+let pauseTime = 0;
+function setupPlayPause(video) {
+  video.addEventListener("pause", () => {
+      pauseTime = Date.now();
+      isPause = true;
+  });
+
+  video.addEventListener("play", () => {
+      if(isPause) {
+        observationBuffer.addPauseDuration(Date.now() - pauseTime);
+      }
+      isPause = false;
+  });
+}
+
+let lastTime = 0;
+function setupSeeking(video) {
+  video.addEventListener("timeupdate", () => {
+    const current = video.currentTime;
+
+    if (Math.abs(current - lastTime) > 2) {
+        // observationBuffer.addEvent("seek", {
+        //   lastTime: lastTime,
+        //   currenTime: video.currentTime
+        // });
+
+        if(current < lastTime) {
+          observationBuffer.addEvent("seekBackward", {
+            lastTime: lastTime,
+            currenTime: video.currentTime
+          });
+          observationBuffer.addBackwardRatio(true);
+        } else {
+          observationBuffer.addBackwardRatio(false);
+        }
+      }
+
+      lastTime = current;
+  });
+}
+
+function setupPip(video) {
+  video.addEventListener("enterpictureinpicture", () => {
+      console.log({
+          observation: "Enter PiP",
+          timestamp: Date.now(),
+          currentTime: video.currentTime,
+      });
+  });
+
+  video.addEventListener("leavepictureinpicture", () => {
+      console.log({
+          observation: "Left PiP",
+          timestamp: Date.now(),
+          currentTime: video.currentTime,
+      });
+  });
+}
+
+(async () => {
+    const video = await waitForVideo();
+
+    console.log("Video Found!", video);
+
+    setupPlayPause(video);
+    setupSeeking(video);
+    setupPip(video);
+})();
+
+
+
+
 const font = new FontFace(
   "Pretendard",
   `url(${chrome.runtime.getURL("fonts/Pretendard-Regular.woff2")})`

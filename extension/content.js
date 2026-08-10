@@ -1,3 +1,5 @@
+const SERVER_ADDRESS = "https://orange-cod-qgrr6659x4whrv6-3000.app.github.dev"
+
 const script =
   document.createElement("script");
 
@@ -128,7 +130,7 @@ class ObservationBuffer {
 
         // TODO
         // POST(payload)
-        const result = await fetch("https://opulent-space-trout-494466pg9x5cxwv-3000.app.github.dev/inference", {
+        const result = await fetch(`${SERVER_ADDRESS}/inference`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -1219,12 +1221,12 @@ window.addEventListener("message", async event => {
         )?.textContent.trim();
 
       console.count(
-        "POST TRANSLATE"
+        "POST VIDEO KNOWLEDGE"
       );
 
       const response =
         await fetch(
-          "https://opulent-space-trout-494466pg9x5cxwv-3000.app.github.dev/translate",
+          `${SERVER_ADDRESS}/video/knowledge`,
           {
             method: "POST",
             headers: {

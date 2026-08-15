@@ -7,73 +7,79 @@ import {
 } from "./segmentBuilder.js";
 import { inferConceptKnowledge } from "./conceptKnowledge.js";
 
-export async function* generateVideoKnowledge({
+export async function generateVideoKnowledge({
   videoId,
   title,
-  subtitles
+  subtitles,
+  sentenceUnits
 }) {
-  // Construct Sentence Units
-    let t0 = Date.now();
-    const sentenceUnits = await reconstructSentenceUnits(subtitles);
+  let t0 = performance.now();
 
-    const suMs =
-      Date.now() - t0;
+  const hasProvidedSentenceUnits = Array.isArray(sentenceUnits) && sentenceUnits.length > 0;
 
-    console.log("sentence units: ", sentenceUnits);
+  const normalizedSentenceUnits =
+    hasProvidedSentenceUnits
+      ? sentenceUnits
+      : Array.isArray(subtitles) && subtitles.length > 0
+        ? await reconstructSentenceUnits(subtitles)
+        : [];
 
-    yield {
-      type: "sentence_units",
-      sentenceUnits
+  const suMs = Number((performance.now() - t0).toFixed(2));
+
+  console.log("[videoKnowledge] normalizedSentenceUnits input length:", normalizedSentenceUnits.length);
+
+  if (!Array.isArray(normalizedSentenceUnits) || normalizedSentenceUnits.length === 0) {
+    console.warn("[videoKnowledge] No sentence units available.");
+    return {
+      videoId,
+      title,
+      sentenceUnits: [],
+      segments: [],
+      conceptKnowledge: []
     };
+  }
 
-  // Detect boundaries with role
+  const preparedSentenceUnits = normalizedSentenceUnits.map((unit, index) => ({
+    ...unit,
+    unitId: unit.unitId ?? unit.sentenceId ?? index,
+    start: unit.start ?? unit.sourceStart ?? 0,
+    end: unit.end ?? unit.sourceEnd ?? unit.start ?? 0,
+    subtitleIds: Array.isArray(unit.subtitleIds) ? unit.subtitleIds : [],
+    text: unit.text ?? ""
+  }));
 
-  t0 = Date.now();
-  const segmentBoundaries = await detectSegmentBoundaries(sentenceUnits);
+  console.log("[videoKnowledge] Sentence Units:", JSON.stringify(preparedSentenceUnits, null, 2));
 
-  console.log("segment boundaries: ", segmentBoundaries);
+  t0 = performance.now();
+  const segmentBoundaries = await detectSegmentBoundaries(preparedSentenceUnits);
+  const boundaryMs = Number((performance.now() - t0).toFixed(2));
 
-  // Construct segments and roles
+  console.log("[videoKnowledge] Segment boundaries:", JSON.stringify(segmentBoundaries, null, 2));
 
-  const segments = buildSegments(sentenceUnits, segmentBoundaries);
-  const sgMs = Date.now() - t0;
+  t0 = performance.now();
+  const segments = buildSegments(preparedSentenceUnits, segmentBoundaries);
+  const segmentMs = Number((performance.now() - t0).toFixed(2));
 
-  console.log("final segments:\n", segments);
+  console.log("[videoKnowledge] Final segments:", JSON.stringify(segments, null, 2));
 
-  // Construct concept relation knowledges
-
-  t0 = Date.now();
+  t0 = performance.now();
   const conceptKnowledges = await inferConceptKnowledge(segments);
-  const ckMs = Date.now() - t0;
+  const conceptMs = Number((performance.now() - t0).toFixed(2));
 
-  console.log("final concept knowledge:", JSON.stringify(conceptKnowledges, null, 2));
-  
+  console.log("[videoKnowledge] Concept knowledge:", JSON.stringify(conceptKnowledges, null, 2));
+
   console.table({
     sentenceUnitMs: suMs,
-    segmentMs: sgMs,
-    conceptKnowledgeMs: ckMs
+    segmentBoundaryMs: boundaryMs,
+    segmentMs,
+    conceptKnowledgeMs: conceptMs
   });
 
-  // // Build Concepts
-
-  // t0 = Date.now();
-  // const segments = await buildConcepts(rawSegments);
-
-  // const cMs = Date.now() - t0;
-  
-  // console.log("segments: ", segments);
-
-
-  // console.table({
-  //   sentenceUnitMs: suMs,
-  //   segmentMs: dbMs + cMs,
-  //   segmentBoundaryMs: dbMs,
-  //   segmentConceptMs: cMs,
-  // });
-
-//   return {
-//     videoId,
-//     segments,
-//     concepts
-//   };
+  return {
+    videoId,
+    title,
+    sentenceUnits: preparedSentenceUnits,
+    segments,
+    conceptKnowledge: conceptKnowledges
+  };
 }

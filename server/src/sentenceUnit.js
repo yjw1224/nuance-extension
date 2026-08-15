@@ -1,5 +1,6 @@
 import {openai} from './openai.js'
 
+const SU_LENGTH_LIMIT = 90;
 
 // ==================================================
 // Main
@@ -8,6 +9,8 @@ import {openai} from './openai.js'
 export async function reconstructSentenceUnits(
   subtitles
 ) {
+
+  const suTimerStart = performance.now();
 
   // -----------------------------------------------
   // 1. Build fragments
@@ -43,8 +46,6 @@ export async function reconstructSentenceUnits(
           `${fragment.fragmentId}: ${fragment.text}`
       )
       .join("\n");
-
-  const SU_LENGTH_LIMIT = 100;
 
   const response =
     await openai.responses.parse({
@@ -104,18 +105,19 @@ Do not analyze concepts, roles, topics, or explanation structure.
 
 Rules:
 
-1. Keep fragments together when they form one sentence or utterance.
-2. Split when a complete sentence or independent utterance ends.
-3. Use punctuation as the strongest boundary signal.
-4. If punctuation is missing, infer boundaries from grammatical and linguistic completeness.
-5. One fragment may contain multiple sentence units.
-6. Multiple fragments may form one sentence unit.
-7. Preserve the original text. Do not rewrite, summarize, or translate.
-8. Do not merge unrelated utterances.
-9. Do not merge non-speech captions such as [music], [applause], or [sound effect] into speech.
-10. Prefer sentence units of ${SU_LENGTH_LIMIT} characters or fewer.
-11. If a sentence exceeds ${SU_LENGTH_LIMIT} characters, split it at the nearest natural linguistic boundary without breaking a clause, phrase, or unfinished construction.
-12. Never split solely at an arbitrary character position.
+Priority order:
+1. Hard constraint: never create a Sentence Unit longer than ${SU_LENGTH_LIMIT} characters. If a sentence or fragment exceeds this length, split it at the nearest subtitleId-safe boundary before the limit is exceeded.
+2. Hard constraint: never split within a single original subtitle. Each Sentence Unit must stay within one original subtitleId boundary; do not break a subtitle into smaller subtitle-level pieces.
+3. Hard constraint: never split solely at an arbitrary character position. Only split at a genuine linguistic boundary, and keep each resulting Sentence Unit within the same original subtitleId.
+4. Keep fragments together when they form one sentence or utterance.
+5. Split when a complete sentence or independent utterance ends.
+6. Use punctuation as the strongest boundary signal.
+7. If punctuation is missing, infer boundaries from grammatical and linguistic completeness.
+8. One fragment may contain multiple sentence units.
+9. Multiple fragments may form one sentence unit.
+10. Preserve the original text. Do not rewrite, summarize, or translate.
+11. Do not merge unrelated utterances.
+12. Do not merge non-speech captions such as [music], [applause], or [sound effect] into speech.
 
 Return only the fragment IDs that end each Sentence Unit.
 
@@ -139,9 +141,15 @@ ${input}
   // -----------------------------------------------
 
   const units =
-    buildSentenceUnits(
-      fragments,
-      boundaries
+    reconcileMissingSubtitleIds(
+      enforceHardLengthConstraint(
+        buildSentenceUnits(
+          fragments,
+          boundaries
+        ),
+        fragments
+      ),
+      fragments
     );
 
 
@@ -158,6 +166,13 @@ ${input}
 
   validateSentenceUnits(units);
 
+  const suMs = Number((performance.now() - suTimerStart).toFixed(2));
+
+  console.table({
+    sentenceUnitReconstructionMs: suMs,
+    inputSubtitleCount: subtitles.length,
+    outputSentenceUnitCount: units.length
+  });
 
   return units;
 }
@@ -425,6 +440,188 @@ function createSentenceUnit(
   };
 }
 
+function buildTextFromFragments(
+  fragments
+) {
+
+  return fragments
+    .map(
+      fragment =>
+        fragment.text
+    )
+    .join(" ")
+    .replace(
+      /\s+/g,
+      " "
+    )
+    .trim();
+}
+
+function reconcileMissingSubtitleIds(
+  units,
+  fragments
+) {
+
+  const coveredSubtitleIds =
+    new Set(
+      units.flatMap(
+        unit =>
+          unit.subtitleIds
+      )
+    );
+
+  const missingSubtitleIds =
+    [
+      ...new Set(
+        fragments
+          .map(
+            fragment =>
+              fragment.subtitleId
+          )
+          .filter(
+            subtitleId =>
+              !coveredSubtitleIds.has(subtitleId)
+          )
+      )
+    ];
+
+  if (
+    missingSubtitleIds.length === 0
+  ) {
+    return units;
+  }
+
+  const missingUnits =
+    missingSubtitleIds.map(
+      (subtitleId, index) =>
+        createSentenceUnit(
+          units.length + index,
+          fragments.filter(
+            fragment =>
+              fragment.subtitleId === subtitleId
+          )
+        )
+    );
+
+  return [
+    ...units,
+    ...missingUnits
+  ].sort(
+    (a, b) =>
+      a.sourceStart - b.sourceStart
+  );
+}
+
+function enforceHardLengthConstraint(
+  units,
+  fragments
+) {
+
+  const nextUnits = [];
+
+  for (const unit of units) {
+
+    if (
+      !unit.text ||
+      unit.text.length <= SU_LENGTH_LIMIT
+    ) {
+      nextUnits.push(unit);
+      continue;
+    }
+
+    const orderedFragments =
+      fragments.filter(
+        fragment =>
+          unit.subtitleIds.includes(fragment.subtitleId)
+      );
+
+    if (
+      orderedFragments.length === 0
+    ) {
+      nextUnits.push(unit);
+      continue;
+    }
+
+    const subtitleGroups = [];
+
+    for (const fragment of orderedFragments) {
+      const lastGroup =
+        subtitleGroups[subtitleGroups.length - 1];
+
+      if (
+        !lastGroup ||
+        lastGroup.subtitleId !== fragment.subtitleId
+      ) {
+        subtitleGroups.push({
+          subtitleId: fragment.subtitleId,
+          fragments: [fragment]
+        });
+        continue;
+      }
+
+      lastGroup.fragments.push(fragment);
+    }
+
+    let currentFragments = [];
+
+    for (const subtitleGroup of subtitleGroups) {
+      const candidateFragments =
+        currentFragments.concat(subtitleGroup.fragments);
+
+      const candidateText =
+        buildTextFromFragments(candidateFragments);
+
+      if (
+        candidateText.length <= SU_LENGTH_LIMIT
+      ) {
+        currentFragments = candidateFragments;
+        continue;
+      }
+
+      if (
+        currentFragments.length > 0
+      ) {
+        nextUnits.push(
+          createSentenceUnit(
+            nextUnits.length,
+            currentFragments
+          )
+        );
+        currentFragments = [];
+      }
+
+      const subtitleGroupText =
+        buildTextFromFragments(subtitleGroup.fragments);
+
+      if (
+        subtitleGroupText.length <= SU_LENGTH_LIMIT
+      ) {
+        currentFragments = subtitleGroup.fragments;
+      } else {
+        nextUnits.push(
+          createSentenceUnit(
+            nextUnits.length,
+            subtitleGroup.fragments
+          )
+        );
+      }
+    }
+
+    if (
+      currentFragments.length > 0
+    ) {
+      nextUnits.push(
+        createSentenceUnit(
+          nextUnits.length,
+          currentFragments
+        )
+      );
+    }
+  }
+
+  return nextUnits;
+}
+
 
 // ==================================================
 // Overlap Resolver
@@ -579,6 +776,18 @@ function validateSentenceUnits(
       console.warn(
         "Empty SU:",
         current.unitId
+      );
+    }
+
+    if (
+      current.text &&
+      current.text.length > SU_LENGTH_LIMIT
+    ) {
+      console.warn(
+        "Oversized SU still exceeds hard limit:",
+        current.unitId,
+        current.text.length,
+        current.subtitleIds
       );
     }
   }

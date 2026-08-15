@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 
 import inferenceRouter from "./routes/inference.js";
 import { generateVideoKnowledge } from "./src/videoKnowledge.js";
+import { reconstructSentenceUnits } from "./src/sentenceUnit.js";
+import { translateSentenceUnits } from "./src/translate.js";
 import { preprocessSubtitles } from './src/subtitlePreprocessor.js';
 
 dotenv.config();
@@ -29,6 +31,89 @@ app.use("/inference", inferenceRouter);
 // RS-007 — Video Knowledge Layer
 // ------------------------------
 
+app.post("/video/sentenceunit", async (req, res) => {
+
+  try {
+    const {
+      videoId,
+      title,
+      subtitles,
+      sentenceSubtitles,
+      sentenceUnits
+    } = req.body;
+
+    const sourceSubtitles =
+      Array.isArray(subtitles)
+        ? subtitles
+        : Array.isArray(sentenceSubtitles)
+          ? sentenceSubtitles
+          : [];
+
+    const processed =
+      Array.isArray(subtitles) || Array.isArray(sentenceSubtitles)
+        ? preprocessSubtitles(sourceSubtitles)
+        : [];
+
+    const suTimerStart = performance.now();
+
+    const outputSentenceUnits =
+      Array.isArray(sentenceUnits) && sentenceUnits.length > 0
+        ? sentenceUnits
+        : await reconstructSentenceUnits(processed.length > 0 ? processed : sourceSubtitles);
+
+    const timing = {
+      sentenceUnitReconstructionMs: Number((performance.now() - suTimerStart).toFixed(2)),
+      outputSentenceUnitCount: Array.isArray(outputSentenceUnits) ? outputSentenceUnits.length : 0
+    };
+
+    res.json({
+      videoId,
+      title,
+      sentenceUnits: outputSentenceUnits,
+      timing
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: error.message
+    });
+  }
+
+});
+
+app.post("/video/translate", async (req, res) => {
+
+  try {
+    const {
+      videoId,
+      title,
+      sentenceUnits,
+      subtitles,
+      sentenceSubtitles,
+      targetLanguage = "ko"
+    } = req.body;
+
+    const result = await translateSentenceUnits({
+      videoId,
+      title,
+      sentenceUnits,
+      subtitles,
+      sentenceSubtitles,
+      targetLanguage
+    });
+
+    res.json(result);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: error.message
+    });
+  }
+
+});
+
 app.post("/video/knowledge", async (req, res) => {
 
   try {
@@ -36,24 +121,33 @@ app.post("/video/knowledge", async (req, res) => {
     const {
       videoId,
       title,
-      sentenceSubtitles
+      sentenceSubtitles,
+      sentenceUnits,
+      subtitles
     } = req.body;
 
-    const processedSubtitles = preprocessSubtitles(sentenceSubtitles)
+    const sourceSubtitles =
+      Array.isArray(sentenceSubtitles)
+        ? sentenceSubtitles
+        : Array.isArray(subtitles)
+          ? subtitles
+          : [];
 
-    console.log(processedSubtitles)
-
-    // 달라진 점만 출력
-
-    // const difference = processedSubtitles.filter((v, i) => v.text !== sentenceSubtitles[i].text);
-
-    // console.log(difference);
+    const sourceSentenceUnits =
+      Array.isArray(sentenceUnits) && sentenceUnits.length > 0
+        ? sentenceUnits
+        : await reconstructSentenceUnits(
+            sourceSubtitles.length > 0
+              ? preprocessSubtitles(sourceSubtitles)
+              : sourceSubtitles
+          );
 
     const knowledge =
       await generateVideoKnowledge({
         videoId,
         title,
-        subtitles: sentenceSubtitles
+        subtitles: sourceSubtitles,
+        sentenceUnits: sourceSentenceUnits
       });
 
     res.json(knowledge);

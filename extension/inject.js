@@ -2,6 +2,17 @@
 // fetch
 // =====================
 
+const LANGUAGE = 'ko';
+
+function isWatchPage() {
+  try {
+    const url = new URL(window.location.href);
+    return url.pathname === "/watch" && url.searchParams.has("v");
+  } catch (error) {
+    return false;
+  }
+}
+
 const originalFetch =
   window.fetch;
 
@@ -17,8 +28,14 @@ window.fetch =
         String(args[0]);
 
       if (
+        !isWatchPage()
+      ) {
+        return response;
+      }
+
+      if (
         url.includes("/api/timedtext") &&
-        url.includes("lang=en")
+        url.includes(`lang=${LANGUAGE}`)
       ) {
 
         const subtitleJson =
@@ -96,7 +113,8 @@ function (...args) {
       try {
 
         if (
-          !this._nuanceUrl
+          !this._nuanceUrl ||
+          !isWatchPage()
         ) {
           return;
         }
@@ -111,7 +129,7 @@ function (...args) {
 
         if (
           !this._nuanceUrl.includes(
-            "lang=en"
+            `lang=${LANGUAGE}`
           )
         ) {
           return;

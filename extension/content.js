@@ -230,13 +230,50 @@ function setupPip(video) {
     setupPip(video);
 })();
 
+let subtitles = [];
+let sentences = [];
+let sentenceUnits = [];
 
+let translated = false;
+let debugSentenceUnitsOnly = false;
+let lastSentenceUnitTiming = {
+  sentenceUnitReconstructionMs: 0,
+  outputSentenceUnitCount: 0
+};
 
+function isWatchPage() {
+  try {
+    const url = new URL(window.location.href);
+    return (
+      url.pathname === "/watch" &&
+      url.searchParams.has("v")
+    );
+  } catch (error) {
+    return false;
+  }
+}
+
+let currentVideoId =
+  new URLSearchParams(
+    location.search
+  ).get("v");
 
 const font = new FontFace(
   "Pretendard",
   `url(${chrome.runtime.getURL("fonts/Pretendard-Regular.woff2")})`
 );
+
+async function ensurePretendardFont() {
+  try {
+    if (!document.fonts?.has(font)) {
+      document.fonts.add(font);
+    }
+
+    await font.load();
+  } catch (error) {
+    console.warn("Pretendard font load failed:", error);
+  }
+}
 
 const box =
   document.createElement("div");
@@ -244,815 +281,133 @@ const box =
 box.className =
   "nuance-subtitle";
 
+box.setAttribute("aria-live", "polite");
 document.body.append(box);
-box.style.display = "none";
 
-const tooltip =
-  document.createElement("div");
-
-tooltip.className =
-  "nuance-marker-tooltip";
-
-tooltip.style.position = "fixed";
-
-tooltip.style.zIndex = "999999";
-
-tooltip.style.pointerEvents = "none";
-
-tooltip.style.display = "none";
-
-tooltip.style.display =
-  "none";
-
-tooltip.addEventListener(
-  "click",
-  e => {
-
-    const row =
-      e.target.closest(
-        ".nuance-child"
-      );
-
-    if (!row) {
-      return;
-    }
-
-    const video =
-      document.querySelector(
-        "video"
-      );
-
-    if (!video) {
-      return;
-    }
-
-    video.currentTime =
-      Number(
-        row.dataset.start
-      ) / 1000;
-
-  }
-);
-
-document.body.append(
-  tooltip
-);
-
-let subtitles = [];
-let sentences = [];
-let sentenceUnits = [];
-
-// ============================
-// Timeline Marker
-// ============================
-
-let timeline = [];
-let markerContainer = null;
-
-let hoveredItem = null;
-
-let hoveredChildStart = null;
-
-let hoveredSubtitle = null;
-
-let hoveredEndSubtitle = null;
-
-let tooltipUpdateInterval = null;
-
-
-
-let translated = false;
-
-
-let currentVideoId =
-  new URLSearchParams(
-    location.search
-  ).get("v");
-
-function clearMarkers() {
-
-  if (markerContainer) {
-
-    markerContainer.remove();
-
-    markerContainer = null;
-
+function renderSubtitleText(text) {
+  if (!isWatchPage()) {
+    box.textContent = "";
+    box.style.display = "none";
+    return;
   }
 
-}
-
-function formatTime(seconds) {
-
-  const m =
-    Math.floor(seconds / 60);
-
-  const s =
-    String(
-      seconds % 60
-    ).padStart(2, "0");
-
-  return `${m}:${s}`;
-
-}
-
-function scoreClass(score) {
-
-  if (score >= 27)
-    return "high";
-
-  if (score >= 24)
-    return "medium-high";
-
-  if (score >= 20)
-    return "medium";
-
-  return "low";
-
-}
-
-function formatDuration(seconds) {
-
-  const m =
-    Math.floor(seconds / 60);
-
-  const s =
-    seconds % 60;
-
-  if (m === 0) {
-    return `${s}s`;
+  if (!text || !String(text).trim()) {
+    box.textContent = "";
+    box.style.display = "none";
+    return;
   }
 
-  if (s === 0) {
-    return `${m}m`;
+  box.textContent = String(text).trim();
+  box.style.display = "block";
+}
+
+function ensureDebugPanel() {
+  if (document.getElementById("nuance-debug-panel")) {
+    return;
   }
 
-  return `${m}m ${s}s`;
+  const panel = document.createElement("div");
+  panel.id = "nuance-debug-panel";
+  panel.style.position = "fixed";
+  panel.style.top = "16px";
+  panel.style.right = "16px";
+  panel.style.zIndex = "2147483647";
+  panel.style.width = "220px";
+  panel.style.padding = "10px 12px";
+  panel.style.borderRadius = "10px";
+  panel.style.background = "rgba(15, 23, 42, 0.9)";
+  panel.style.border = "1px solid rgba(148, 163, 184, 0.5)";
+  panel.style.boxShadow = "0 8px 18px rgba(0,0,0,0.28)";
+  panel.style.color = "#f8fafc";
+  panel.style.fontFamily = "Pretendard, sans-serif";
+  panel.style.fontSize = "12px";
+  panel.style.lineHeight = "1.5";
 
+  panel.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; gap: 8px; margin-bottom: 6px;">
+      <strong style="font-size: 12px;">Nuance Debug</strong>
+      <button id="nuance-debug-toggle" style="border:none; border-radius:999px; padding:5px 10px; background:#38bdf8; color:#082f49; font-weight:700; cursor:pointer;">SU only: OFF</button>
+    </div>
+    <div id="nuance-debug-mode">Mode: normal</div>
+    <div id="nuance-debug-timing">SU time: 0 ms</div>
+    <div id="nuance-debug-count">SU count: 0</div>
+  `;
+
+  const toggleButton = panel.querySelector("#nuance-debug-toggle");
+  toggleButton.addEventListener("click", () => {
+    debugSentenceUnitsOnly = !debugSentenceUnitsOnly;
+    updateDebugPanel();
+  });
+
+  document.body.appendChild(panel);
+  updateDebugPanel();
 }
 
-function createRange(
-  item,
-  subtitle,
-  endSubtitle,
-  video
-) {
+function updateDebugPanel() {
+  const panel = document.getElementById("nuance-debug-panel");
+  if (!panel) {
+    return;
+  }
 
-  const startPercent =
-    subtitle.start /
-    (video.duration * 1000);
+  const toggleButton = panel.querySelector("#nuance-debug-toggle");
+  const modeEl = panel.querySelector("#nuance-debug-mode");
+  const timingEl = panel.querySelector("#nuance-debug-timing");
+  const countEl = panel.querySelector("#nuance-debug-count");
 
-  const endPercent =
-    (
-      endSubtitle.start +
-      endSubtitle.duration
-    ) /
-    (video.duration * 1000);
+  if (toggleButton) {
+    toggleButton.textContent = `SU only: ${debugSentenceUnitsOnly ? "ON" : "OFF"}`;
+    toggleButton.style.background = debugSentenceUnitsOnly ? "#fbbf24" : "#38bdf8";
+    toggleButton.style.color = debugSentenceUnitsOnly ? "#111827" : "#082f49";
+  }
 
-  const range =
-    document.createElement("div");
+  if (modeEl) {
+    modeEl.textContent = `Mode: ${debugSentenceUnitsOnly ? "sentence-units-only" : "normal"}`;
+  }
 
-  range.className =
-    "nuance-range";
+  if (timingEl) {
+    timingEl.textContent = `SU time: ${lastSentenceUnitTiming.sentenceUnitReconstructionMs.toFixed(2)} ms`;
+  }
 
-  range.classList.add(
-    `nuance-range-${scoreClass(
-      item.investmentScore
-    )}`
-  );
-
-  range.style.left =
-    `${startPercent * 100}%`;
-
-  range.style.width =
-    `${(endPercent - startPercent) * 100}%`;
-
-  return range;
-
+  if (countEl) {
+    countEl.textContent = `SU count: ${lastSentenceUnitTiming.outputSentenceUnitCount}`;
+  }
 }
 
-function createMarker(
-  item,
-  subtitle,
-  endSubtitle,
-  video
-) {
-
-  const startPercent =
-    subtitle.start /
-    (video.duration * 1000);
-
-  const marker =
-    document.createElement("div");
-
-  marker.className =
-    "nuance-marker";
-
-  marker.classList.add(
-    `nuance-marker-${scoreClass(
-      item.investmentScore
-    )}`
-  );
-
-  marker.style.left =
-    `${startPercent * 100}%`;
-
-  marker.addEventListener(
-    "mouseenter",
-    e => {
-
-      showTooltip(
-        e,
-        item,
-        subtitle,
-        endSubtitle
-      );
-
-    }
-  );
-
-  marker.addEventListener(
-    "mousemove",
-    e => {
-
-      updateTooltip();
-
-      moveTooltip(e);
-
-    }
-  );
-
-  marker.addEventListener(
-    "mouseleave",
-    hideTooltip
-  );
-
-  marker.onclick =
-    () => {
-
-      video.currentTime =
-        subtitle.start / 1000;
-
-    };
-
-  return marker;
-
-}
-
-function showTooltip(
-  e,
-  item,
-  subtitle,
-  endSubtitle
-) {
-  hoveredItem = item;
-
-  hoveredSubtitle = subtitle;
-
-  hoveredEndSubtitle = endSubtitle;
-
-  clearInterval(
-    tooltipUpdateInterval
-  );
-
-  updateTooltip();
-
-  tooltipUpdateInterval =
-    setInterval(
-      updateTooltip,
-      300
-    );
-
-  tooltip.style.display = "block";
-
-  tooltip.style.opacity = "1";
-
-  moveTooltip(e);
-}
-
-function updateTooltip() {
-
-  if (
-    !hoveredItem ||
-    !hoveredSubtitle ||
-    !hoveredEndSubtitle
-  ) {
+function updateSubtitleFromSentenceUnits() {
+  if (!isWatchPage()) {
+    renderSubtitleText("");
     return;
   }
 
   const video =
     document.querySelector("video");
 
-  if (!video) {
+  if (
+    !video ||
+    !Array.isArray(sentenceUnits) ||
+    sentenceUnits.length === 0
+  ) {
+    renderSubtitleText("");
     return;
   }
 
   const currentMs =
-  video.currentTime * 1000;
-
-  const activeChild =
-    hoveredItem.children?.find(
-      child => {
-
-        const start =
-          sentences.find(
-            s =>
-              s.sentenceId ===
-              child.startSentenceId
-          );
-
-        const end =
-          sentences.find(
-            s =>
-              s.sentenceId ===
-              child.endSentenceId
-          );
-
-        if (
-          !start ||
-          !end
-        ) {
-          return false;
-        }
-
-        return (
-          currentMs >=
-            start.start &&
-          currentMs <
-            end.start +
-            end.duration
-        );
-
-      }
+    Math.floor(
+      video.currentTime * 1000
     );
 
-  const startTime =
-    formatTime(
-      Math.floor(
-        hoveredSubtitle.start / 1000
-      )
+  const currentUnit =
+    sentenceUnits.find(
+      unit =>
+        currentMs >= unit.start &&
+        currentMs < unit.end
     );
 
-  const duration =
-    formatDuration(
-
-      Math.floor(
-
-        (
-          hoveredEndSubtitle.start +
-          hoveredEndSubtitle.duration -
-          hoveredSubtitle.start
-        ) / 1000
-
-      )
-
-    );
-
-  const level =
-    scoreClass(
-      hoveredItem.investmentScore
-    );
-
-  const width =
-    `${hoveredItem.investmentScore / 30 * 100}%`;
-
-  const childHtml =
-    (hoveredItem.children ?? [])
-
-      .map(child => {
-
-        const start =
-          sentences.find(
-            s =>
-              s.sentenceId ===
-              child.startSentenceId
-          );
-
-        const end =
-          sentences.find(
-            s =>
-              s.sentenceId ===
-              child.endSentenceId
-          );
-
-        if (
-          !start ||
-          !end
-        ) {
-          return "";
-        }
-
-        const active =
-
-          currentMs >=
-          start.start &&
-
-          currentMs <
-          end.start +
-          end.duration;
-
-        const hovered =
-          hoveredChildStart ===
-          start.start;
-
-        return `
-
-<div
-  class="nuance-child
-    ${active ? " nuance-child-active" : ""}
-    ${hovered ? " nuance-child-hover" : ""}"
-  data-start="${start.start}"
->
-
-  <span class="nuance-child-icon">
-
-    <span
-        class="nuance-child-icon-inner
-        ${active ? "nuance-child-icon-active" : ""}
-        ${hovered && !active ? "nuance-child-icon-hover" : ""}">
-    </span>
-
-</span>
-
-  <span class="nuance-child-label">
-
-    ${child.displayName ?? child.concept}
-
-  </span>
-
-</div>
-
-`;
-
-      })
-
-      .join("");
-
-  document
-  .querySelectorAll(
-    ".nuance-child-dot"
-  )
-  .forEach(
-    dot =>
-      dot.classList.remove(
-        "nuance-child-dot-active"
-      )
-  );
-
-  if (activeChild) {
-
-    const start =
-      sentences.find(
-        s =>
-          s.sentenceId ===
-          activeChild.startSentenceId
-      );
-
-    document
-      .querySelector(
-        `.nuance-child-dot[data-start="${start.start}"]`
-      )
-      ?.classList.add(
-        "nuance-child-dot-active"
-      );
-
-  }
-
-  tooltip.innerHTML = `
-
-<div class="nuance-marker-title">
-
-  ${hoveredItem.displayName ?? hoveredItem.concept}
-
-</div>
-
-${hoveredItem.displayName ? 
-  `
-  <div class="nuance-marker-original">
-    ${hoveredItem.concept}
-  </div>
-  ` : ''
+  renderSubtitleText(currentUnit?.text ?? "");
 }
 
-<div class="nuance-marker-time">
-
-${startTime} · ${duration}
-
-</div>
-
-${
-hoveredItem.learningRole ?
-`
-<div class="nuance-marker-role">
-    ${hoveredItem.learningRole}
-</div>
-`
-: ""
-}
-
-${hoveredItem.children.length > 0 ? `<div class="nuance-child-list">
-
-${childHtml}
-
-</div>` : ``}
-
-<div
-class="
-nuance-tooltip-bar
-nuance-tooltip-bar-${level}
-"
-
-style="width:${width}"
-
-></div>
-
-`;
-
-}
-
-
-function hideTooltip(){
-
-    clearInterval(
-        tooltipUpdateInterval
-    );
-
-    tooltip.style.display="none";
-
-}
-
-function moveTooltip(e){
-
-    const margin = 12;
-
-    const rect =
-      tooltip.getBoundingClientRect();
-
-    let left =
-      e.clientX -
-      rect.width / 2;
-
-    let top =
-      e.clientY -
-      rect.height -
-      14;
-
-    left = Math.max(
-      margin,
-      Math.min(
-        left,
-        window.innerWidth -
-        rect.width -
-        margin
-      )
-    );
-
-    if(top < margin){
-
-        top =
-          e.clientY + 16;
-
-    }
-
-    tooltip.style.left =
-      `${left}px`;
-
-    tooltip.style.top =
-      `${top}px`;
-
-}
-
-function renderMarkers() {
-
-  const video =
-    document.querySelector("video");
-
-  console.log(video?.duration);
-
-  if (
-    !video ||
-    !video.duration ||
-    timeline.length === 0
-  ) {
-    return;
-  }
-
-  const progressBar =
-    document.querySelector(
-      ".ytp-progress-bar-container"
-    );
-
-  if (!progressBar) {
-    return;
-  }
-
-  clearMarkers();
-
-  markerContainer =
-    document.createElement("div");
-
-  markerContainer.className =
-    "nuance-marker-container";
-
-  progressBar.appendChild(
-    markerContainer
-  );
-
-  for (const item of timeline) {
-
-    const subtitle =
-      sentences.find(
-        s => s.sentenceId === item.startSentenceId
-      );
-
-    const endSubtitle =
-      sentences.find(
-        s => s.sentenceId === item.endSentenceId
-      );
-
-    if (
-      !subtitle ||
-      !endSubtitle
-    ) {
-      continue;
-    }
-
-    const range =
-      createRange(
-        item,
-        subtitle,
-        endSubtitle,
-        video
-      );
-
-    const marker =
-      createMarker(
-        item,
-        subtitle,
-        endSubtitle,
-        video
-      );
-
-    markerContainer.append(
-      marker, range
-    );
-
-    for (const child of item.children ?? []) {
-
-      if (
-          child.startSentenceId ===
-          item.startSentenceId
-      ) continue;
-
-      const dot =
-        createChildDot(
-          item,
-          child,
-          video
-        );
-
-      if(dot){
-
-          markerContainer.appendChild(
-              dot
-          );
-
-      }
-
-    }
-
-  }
-
-}
-
-// children dot을 생성하는 함수.
-
-function createChildDot(
-  item,
-  child,
-  video
-) {
-  const subtitle =
-    sentences.find(
-      s =>
-        s.sentenceId ===
-        child.startSentenceId
-    );
-
-  if (!subtitle)
-    return null;
-
-
-  const parentStart =
-    sentences.find(
-      s =>
-        s.sentenceId ===
-        item.startSentenceId
-    );
-
-  const parentEnd =
-    sentences.find(
-      s =>
-        s.sentenceId ===
-        item.endSentenceId
-    );
-
-  const percent =
-    subtitle.start /
-    (video.duration * 1000);
-
-  const dot =
-    document.createElement("div");
-
-  dot.className =
-    "nuance-child-dot";
-
-  dot.style.left =
-    `${percent * 100}%`;
-
-  dot.style.top = '50%';
-
-  dot.dataset.start =
-    subtitle.start;
-
-  dot.title =
-    child.concept;
-
-  dot.addEventListener(
-    "click",
-    e => {
-
-      e.stopPropagation();
-
-      video.currentTime =
-        subtitle.start / 1000;
-
-    }
-  );
-
-  dot.addEventListener(
-    "mouseenter",
-    e => {
-
-      hoveredItem = item;
-
-      hoveredChildStart =
-      subtitle.start;
-
-      showTooltip(
-        e,
-        item,
-        parentStart,
-        parentEnd
-      );
-
-      const row =
-        document.querySelector(
-          `.nuance-child[data-start="${subtitle.start}"]`
-        );
-
-      row?.classList.add(
-        "nuance-child-active"
-      );
-
-    }
-  );
-
-  dot.addEventListener(
-    "mousemove",
-    e => {
-
-      updateTooltip();
-
-      moveTooltip(e);
-
-    }
-  );
-
-  dot.addEventListener(
-    "mouseleave",
-    () => {
-
-      const row =
-        document.querySelector(
-
-          `.nuance-child[data-start="${subtitle.start}"]`
-
-        );
-
-      row?.classList.remove(
-        "nuance-child-active"
-      );
-
-      hoveredChildStart = null;
-      updateTooltip();
-      hideTooltip();
-
-    }
-  );
-
-  return dot;
-
-}
+ensurePretendardFont();
+ensureDebugPanel();
 
 // 영상 변경 감지
 setInterval(() => {
@@ -1061,6 +416,12 @@ setInterval(() => {
     new URLSearchParams(
       location.search
     ).get("v");
+
+  if (!isWatchPage()) {
+    box.textContent = "";
+    box.style.display = "none";
+    return;
+  }
 
   if (
     videoId &&
@@ -1076,10 +437,6 @@ setInterval(() => {
     sentences = [];
 
     sentenceUnits = [];
-
-    timeline = [];
-
-    clearMarkers();
 
     box.textContent = "";
 
@@ -1097,38 +454,7 @@ setInterval(() => {
 // Sentence Unit 기준 자막 표시
 
 setInterval(() => {
-
-  const video =
-    document.querySelector("video");
-
-  if (
-    !video ||
-    !Array.isArray(sentenceUnits) ||
-    sentenceUnits.length === 0
-  ) {
-    return;
-  }
-
-  const currentMs =
-    Math.floor(
-      video.currentTime * 1000
-    );
-
-  const currentUnit =
-    sentenceUnits.find(
-      unit =>
-        currentMs >= unit.start &&
-        currentMs < unit.end
-    );
-
-  const text =
-    currentUnit?.text ?? "";
-
-  box.textContent = text;
-
-  box.style.display =
-    text ? "block" : "none";
-
+  updateSubtitleFromSentenceUnits();
 }, 100);
 
 
@@ -1186,6 +512,11 @@ window.addEventListener("message", async event => {
       message.type !==
       "NUANCE_SUBTITLE_JSON"
     ) {
+      return;
+    }
+
+    if (!isWatchPage()) {
+      renderSubtitleText("");
       return;
     }
 
@@ -1261,13 +592,25 @@ window.addEventListener("message", async event => {
           "#channel-name a"
         )?.textContent.trim();
 
+      const videoId =
+        new URLSearchParams(
+          window.location.search
+        ).get("v");
+
+      const requestBase = {
+        videoId,
+        title: document.title,
+        channel,
+        sentenceSubtitles,
+      };
+
       console.count(
-        "POST VIDEO KNOWLEDGE"
+        "POST VIDEO SENTENCE UNITS"
       );
 
-      const response =
+      const sentenceUnitResponse =
         await fetch(
-          `${SERVER_ADDRESS}/video/knowledge`,
+          `${SERVER_ADDRESS}/video/sentenceunit`,
           {
             method: "POST",
             headers: {
@@ -1275,156 +618,136 @@ window.addEventListener("message", async event => {
                 "application/json"
             },
             body: JSON.stringify({
-
-              videoId:
-                new URLSearchParams(
-                  window.location.search
-                ).get("v"),
-
-              title:
-                document.title,
-
-              channel,
-
-              sentenceSubtitles
-
+              ...requestBase,
+              subtitles: sentenceSubtitles
             })
           }
         );
 
-      const reader =
-        response.body.getReader();
+      const sentenceUnitPayload =
+        await sentenceUnitResponse.json();
 
-      const decoder =
-        new TextDecoder();
+      const resolvedSentenceUnits =
+        Array.isArray(sentenceUnitPayload.sentenceUnits)
+          ? sentenceUnitPayload.sentenceUnits
+          : sentenceSubtitles.map((item, index) => ({
+              unitId: index,
+              start: item.start,
+              end: item.start + item.duration,
+              subtitleIds: [item.id ?? index],
+              text: item.text
+            }));
 
-      let buffer = "";
+      lastSentenceUnitTiming = {
+        sentenceUnitReconstructionMs:
+          Number(sentenceUnitPayload?.timing?.sentenceUnitReconstructionMs ?? 0),
+        outputSentenceUnitCount:
+          Array.isArray(resolvedSentenceUnits) ? resolvedSentenceUnits.length : 0
+      };
 
-      while (true) {
+      updateDebugPanel();
 
-        const {
+      sentenceUnits = resolvedSentenceUnits;
 
-          value,
+      console.log(
+        "Sentence Units:",
+        sentenceUnits
+      );
 
-          done
+      if (debugSentenceUnitsOnly) {
+        console.log("[debug] sentence-units-only mode enabled");
+        console.log("Sentence Units:", JSON.stringify(resolvedSentenceUnits, null, 2));
+        return;
+      }
 
-        } =
-          await reader.read();
+      console.count(
+        "POST VIDEO KNOWLEDGE + TRANSLATE"
+      );
 
-        if (done) {
-          break;
-        }
+      if (debugSentenceUnitsOnly) {
+        console.log("[debug] sentence-units-only mode enabled");
+        console.log("Sentence Units:", JSON.stringify(resolvedSentenceUnits, null, 2));
+        return;
+      }
 
-        buffer +=
-          decoder.decode(
-            value,
+      const [knowledgeResponse, translateResponse] =
+        await Promise.all([
+          fetch(
+            `${SERVER_ADDRESS}/video/knowledge`,
             {
-              stream: true
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+              body: JSON.stringify({
+                ...requestBase,
+                sentenceUnits: resolvedSentenceUnits,
+                subtitles: sentenceSubtitles
+              })
             }
-          );
+          ),
+          fetch(
+            `${SERVER_ADDRESS}/video/translate`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+              body: JSON.stringify({
+                videoId,
+                title: document.title,
+                channel,
+                sentenceUnits: resolvedSentenceUnits,
+                sentenceSubtitles,
+                targetLanguage: "ko"
+              })
+            }
+          )
+        ]);
 
-        const messages =
-          buffer.split("\n\n");
+      const knowledgePayload =
+        await knowledgeResponse.json();
 
-        buffer =
-          messages.pop();
+      const translatePayload =
+        await translateResponse.json();
 
-        for (const message of messages) {
+      const translatedEntries =
+        Array.isArray(translatePayload.translations)
+          ? translatePayload.translations
+          : [];
 
-          if (!message.trim()) {
-            continue;
-          }
+      subtitles =
+        translatedEntries.map(
+          entry => ({
+            sentenceId:
+              entry.sentenceId ?? entry.unitId ?? 0,
+            start:
+              entry.start ?? 0,
+            duration:
+              entry.duration ?? 0,
+            subtitleIds:
+              entry.subtitleIds ?? [],
+            text:
+              entry.translatedText ?? entry.text ?? ""
+          })
+        );
 
-          const chunk =
-            JSON.parse(message);
-
-          if (chunk.type === "translation") {
-
-            subtitles.push(
-              ...chunk.translation
-            );
-
-            subtitles.sort(
-              (a, b) =>
-                a.sentenceId -
-                b.sentenceId
-            );
-
-          }
-
-          else if (chunk.type === "timeline") {
-
-            timeline =
-              chunk.timeline;
-
-            console.log(
-              "Timeline:",
-              timeline
-            );
-
-            renderMarkers();
-
-          }
-
-          else if (chunk.type === "sentence_units") {
-
-            sentenceUnits =
-              chunk.sentenceUnits;
-
-            console.log(
-              "Sentence Units:",
-              sentenceUnits
-            );
-
-          }
-
-          console.log(
-            "STREAM:",
-            chunk
-          );
-
-        }
-
-      }
-
-      if (buffer.trim()) {
-
-        const chunk =
-          JSON.parse(buffer);
-
-        if (chunk.type === "translation") {
-
-          subtitles.push(
-            ...chunk.translation
-          );
-
-          subtitles.sort(
-            (a, b) =>
-              a.sentenceId -
-              b.sentenceId
-          );
-
-        }
-
-        else if (chunk.type === "timeline") {
-
-          timeline =
-            chunk.timeline;
-
-          console.log(
-            "Timeline:",
-            timeline
-          );
-
-          renderMarkers();
-
-        }
-
-      }
+      subtitles.sort(
+        (a, b) =>
+          a.sentenceId -
+          b.sentenceId
+      );
 
       console.log(
         "Translated:",
         subtitles.length
+      );
+
+      console.log(
+        "Knowledge:",
+        knowledgePayload
       );
 
     }

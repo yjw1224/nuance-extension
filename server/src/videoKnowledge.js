@@ -5,11 +5,9 @@ import {
 import {
   buildSegments
 } from "./segmentBuilder.js";
-import {
-  buildConcepts
-} from "./buildConcept.js";
+import { inferConceptKnowledge } from "./conceptKnowledge.js";
 
-export async function generateVideoKnowledge({
+export async function* generateVideoKnowledge({
   videoId,
   title,
   subtitles
@@ -23,34 +21,55 @@ export async function generateVideoKnowledge({
 
     console.log("sentence units: ", sentenceUnits);
 
+    yield {
+      type: "sentence_units",
+      sentenceUnits
+    };
+
   // Detect boundaries with role
 
   t0 = Date.now();
   const segmentBoundaries = await detectSegmentBoundaries(sentenceUnits);
 
-  const dbMs = Date.now() - t0;
-
   console.log("segment boundaries: ", segmentBoundaries);
 
   // Construct segments and roles
 
-  const rawSegments = buildSegments(sentenceUnits, segmentBoundaries);
+  const segments = buildSegments(sentenceUnits, segmentBoundaries);
+  const sgMs = Date.now() - t0;
 
-  // Build concepts
+  console.log("final segments:\n", segments);
+
+  // Construct concept relation knowledges
 
   t0 = Date.now();
-  const segments = await buildConcepts(rawSegments);
+  const conceptKnowledges = await inferConceptKnowledge(segments);
+  const ckMs = Date.now() - t0;
 
-  const cMs = Date.now() - t0;
+  console.log("final concept knowledge:", JSON.stringify(conceptKnowledges, null, 2));
   
-  console.log("segments: ", segments);
-
   console.table({
     sentenceUnitMs: suMs,
-    segmentMs: dbMs + cMs,
-    segmentBoundaryMs: dbMs,
-    segmentConceptMs: cMs,
+    segmentMs: sgMs,
+    conceptKnowledgeMs: ckMs
   });
+
+  // // Build Concepts
+
+  // t0 = Date.now();
+  // const segments = await buildConcepts(rawSegments);
+
+  // const cMs = Date.now() - t0;
+  
+  // console.log("segments: ", segments);
+
+
+  // console.table({
+  //   sentenceUnitMs: suMs,
+  //   segmentMs: dbMs + cMs,
+  //   segmentBoundaryMs: dbMs,
+  //   segmentConceptMs: cMs,
+  // });
 
 //   return {
 //     videoId,

@@ -300,6 +300,7 @@ document.body.append(
 
 let subtitles = [];
 let sentences = [];
+let sentenceUnits = [];
 
 // ============================
 // Timeline Marker
@@ -1074,6 +1075,8 @@ setInterval(() => {
 
     sentences = [];
 
+    sentenceUnits = [];
+
     timeline = [];
 
     clearMarkers();
@@ -1091,7 +1094,8 @@ setInterval(() => {
 
 }, 500);
 
-// 자막 표시
+// Sentence Unit 기준 자막 표시
+
 setInterval(() => {
 
   const video =
@@ -1099,8 +1103,8 @@ setInterval(() => {
 
   if (
     !video ||
-    !Array.isArray(subtitles) ||
-    subtitles.length === 0
+    !Array.isArray(sentenceUnits) ||
+    sentenceUnits.length === 0
   ) {
     return;
   }
@@ -1110,18 +1114,15 @@ setInterval(() => {
       video.currentTime * 1000
     );
 
-  const currentSubtitle =
-    subtitles.find(
-      subtitle =>
-        currentMs >=
-          subtitle.start &&
-        currentMs <
-          subtitle.start +
-          subtitle.duration
+  const currentUnit =
+    sentenceUnits.find(
+      unit =>
+        currentMs >= unit.start &&
+        currentMs < unit.end
     );
 
   const text =
-    currentSubtitle?.text ?? "";
+    currentUnit?.text ?? "";
 
   box.textContent = text;
 
@@ -1129,6 +1130,46 @@ setInterval(() => {
     text ? "block" : "none";
 
 }, 100);
+
+
+
+// setInterval(() => {
+
+//   const video =
+//     document.querySelector("video");
+
+//   if (
+//     !video ||
+//     !Array.isArray(subtitles) ||
+//     subtitles.length === 0
+//   ) {
+//     return;
+//   }
+
+//   const currentMs =
+//     Math.floor(
+//       video.currentTime * 1000
+//     );
+
+//   const currentSubtitle =
+//     subtitles.find(
+//       subtitle =>
+//         currentMs >=
+//           subtitle.start &&
+//         currentMs <
+//           subtitle.start +
+//           subtitle.duration
+//     );
+
+//   const text =
+//     currentSubtitle?.text ?? "";
+
+//   box.textContent = text;
+
+//   box.style.display =
+//     text ? "block" : "none";
+
+// }, 100);
 
 window.addEventListener("message", async event => {
 
@@ -1322,6 +1363,18 @@ window.addEventListener("message", async event => {
             );
 
             renderMarkers();
+
+          }
+
+          else if (chunk.type === "sentence_units") {
+
+            sentenceUnits =
+              chunk.sentenceUnits;
+
+            console.log(
+              "Sentence Units:",
+              sentenceUnits
+            );
 
           }
 

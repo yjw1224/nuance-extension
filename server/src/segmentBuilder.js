@@ -18,7 +18,8 @@
  *   [
  *     {
  *       endUnitId,
- *       role
+ *       role,
+ *       concept
  *     }
  *   ]
  *
@@ -35,8 +36,8 @@
  *     }
  *   ]
  *
- * Concept is intentionally null here.
- * Concept extraction is a separate step.
+ * Concept is generated together with the
+ * segment boundary and role.
  */
 
 export function buildSegments(
@@ -191,7 +192,8 @@ export function buildSegments(
 
       text,
 
-      concept: null,
+      conceptCandidate:
+        boundary.concept ?? null,
 
       role:
         boundary.role

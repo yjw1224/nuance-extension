@@ -1,108 +1,64 @@
 import { openai } from "./openai.js";
 import { translateInto } from "./language.js";
-import {
-  parseGPTJson
-}
-from "./gptParser.js";
 
-function chunkArray(
-  array,
-  chunkSize = 12
-) {
+const CHUNK_SIZE = 8;
 
+function chunkArray(array, chunkSize = CHUNK_SIZE) {
   const chunks = [];
 
-  // 첫 청크는 8문장
-  chunks.push(
-    array.slice(0, 8)
-  );
+  chunks.push(array.slice(0, 8));
 
-  for (
-    let i = 8;
-    i < array.length;
-    i += chunkSize
-  ) {
-    chunks.push(
-      array.slice(i, i + chunkSize)
-    );
+  for (let i = 8; i < array.length; i += chunkSize) {
+    chunks.push(array.slice(i, i + chunkSize));
   }
 
   return chunks;
 }
 
-async function translateChunk(
-  transcript,
-  context,
-  chunkIndex
-) {
-
+async function translateChunk(transcript, context, _chunkIndex, targetLanguage = translateInto) {
   let retryCount = 0;
 
-  const transcriptText =
-    JSON.stringify(
+  const transcriptText = JSON.stringify(
+    transcript.map((sentence) => [sentence.sentenceId, sentence.text]),
+    null,
+    2
+  );
 
-      transcript.map(
-
-        sentence => [
-
-          sentence.sentenceId,
-
-          sentence.text
-
-        ]
-      ),
-
-      null,
-
-      2
-
-    );
-
-const response = await openai.responses.parse({
-  model: process.env.OPENAI_MODEL,
-
-  temperature: 0,
-
-  text: {
-    format: {
-      type: "json_schema",
-      name: "subtitle_translation",
-      strict: true,
-      schema: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          translations: {
-            type: "array",
-            minItems: transcript.length,
-            maxItems: transcript.length,
-            items: {
-              type: "object",
-              additionalProperties: false,
-              properties: {
-                sentenceId: {
-                  type: "integer"
+  const response = await openai.responses.parse({
+    model: process.env.OPENAI_TRANSLATION_MODEL,
+    // temperature: 0,
+    reasoning: { effort: "none" },
+    
+    text: {
+      format: {
+        type: "json_schema",
+        name: "subtitle_translation",
+        strict: true,
+        schema: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            translations: {
+              type: "array",
+              minItems: transcript.length,
+              maxItems: transcript.length,
+              items: {
+                type: "object",
+                additionalProperties: false,
+                properties: {
+                  sentenceId: { type: "integer" },
+                  translatedText: { type: "string" }
                 },
-                translatedText: {
-                  type: "string"
-                }
-              },
-              required: [
-                "sentenceId",
-                "translatedText"
-              ]
+                required: ["sentenceId", "translatedText"]
+              }
             }
-          }
-        },
-        required: [
-          "translations"
-        ]
+          },
+          required: ["translations"]
+        }
       }
-    }
-  },
-
-  input: `You are a professional subtitle translator.
-Translate each subtitle into natural ${translateInto}.
+    },
+    input: `You are a professional subtitle translator.
+Translate each subtitle into natural ${targetLanguage}.
 Use the Translation Context Memory as the highest-priority reference for terminology, style, and disambiguation.
 
 Rules:
@@ -122,168 +78,84 @@ ${context}
 Input:
 ${transcriptText}
 `
-});
+  });
 
-  console.log(
-    `\n=== CHUNK ${chunkIndex + 1} ===`
-  );
-
-  console.log(
-    JSON.stringify(
-      response.usage,
-      null,
-      2
-    )
-  );
-  
   let translated;
 
   try {
     translated = response.output_parsed.translations;
-    // console.log(translated);
   } catch (error) {
-    console.log("\n=== RAW GPT OUTPUT ===\n");
-    console.log(response.output_text);
-
     throw new Error("Invalid structured output from GPT");
   }
 
-  const translatedMap = new Map(
-    translated.map(({ sentenceId, translatedText }) => [
-      Number(sentenceId),
-      translatedText
-    ])
+  const inputIdSet = new Set(
+    transcript.map((sentence) => Number(sentence.sentenceId))
   );
 
-  // 번호 누락 에러!
+  const translatedMap = new Map();
+  for (const item of translated) {
+    const sentenceId = Number(item?.sentenceId);
+
+    if (!Number.isInteger(sentenceId)) {
+      continue;
+    }
+
+    if (!inputIdSet.has(sentenceId)) {
+      continue;
+    }
+
+    if (translatedMap.has(sentenceId)) {
+      continue;
+    }
+
+    translatedMap.set(sentenceId, String(item?.translatedText ?? ""));
+  }
+
   for (const sentence of transcript) {
-
     if (!translatedMap.has(sentence.sentenceId)) {
-
-      console.log(
-        `Retry sentenceId ${sentence.sentenceId}`
-      );
-
       retryCount++;
 
       let success = false;
 
-      for (
-        let i = 0;
-        i < 2;
-        i++
-      ) {
-
+      for (let i = 0; i < 2; i++) {
         try {
-
-          const retry =
-            await translateOneSubtitle(
-              sentence,
-              context
-            );
-
-          translatedMap.set(
-            Number(retry.sentenceId),
-            retry.translatedText
-          );
-
+          const retry = await translateOneSubtitle(sentence, context, targetLanguage);
+          translatedMap.set(Number(sentence.sentenceId), retry.translatedText);
           success = true;
-
           break;
-
+        } catch (error) {
+          console.error(error);
         }
-
-        catch (error) {
-
-          console.log(
-            `Retry ${i + 1} failed`
-          );
-          console.error(error)
-
-        }
-
       }
 
       if (!success) {
-
-        throw new Error(
-          `Retry failed for sentenceId ${sentence.sentenceId}`
-        );
-
+        throw new Error(`Retry failed for sentenceId ${sentence.sentenceId}`);
       }
-
     }
-
   }
 
-  if (
-    translatedMap.size !==
-    transcript.length
-  ) {
+  const missingSentenceIds = transcript
+    .map((sentence) => Number(sentence.sentenceId))
+    .filter((sentenceId) => !translatedMap.has(sentenceId));
 
-    console.log(
-      "\n=== INPUT ===\n"
-    );
-
-    console.log(
-      transcript.map(
-        t =>
-          `[${t.sentenceId}] ${t.text}`
-      )
-    );
-
-    console.log(
-      "\n=== OUTPUT ===\n"
-    );
-
-    console.log(
-      response.output_text
-    );
-
-    throw new Error(
-      "Translation ID count mismatch"
-    );
+  if (missingSentenceIds.length > 0) {
+    throw new Error("Translation ID count mismatch");
   }
 
   return {
-
-    translation:
-
-      transcript.map(
-        sentence => ({
-
-          sentenceId:
-            sentence.sentenceId,
-
-          start:
-            sentence.start,
-
-          duration:
-            sentence.duration,
-
-          subtitleIds:
-            sentence.subtitleIds,
-
-          text:
-            translatedMap.get(
-              sentence.sentenceId
-            )
-
-        })
-      ),
-
-    usage:
-      response.usage,
-
+    translation: transcript.map((sentence) => ({
+      sentenceId: sentence.sentenceId,
+      start: sentence.start,
+      duration: sentence.duration,
+      subtitleIds: sentence.subtitleIds,
+      text: translatedMap.get(sentence.sentenceId)
+    })),
+    usage: response.usage,
     retryCount
-
   };
 }
 
-async function translateOneSubtitle(
-  sentence,
-  context
-) {
+async function translateOneSubtitle(sentence, context, targetLanguage = translateInto) {
   if (!sentence.text.trim()) {
     return {
       sentenceId: sentence.sentenceId,
@@ -294,7 +166,6 @@ async function translateOneSubtitle(
   const response = await openai.responses.parse({
     model: process.env.OPENAI_MODEL,
     temperature: 0,
-
     text: {
       format: {
         type: "json_schema",
@@ -312,31 +183,21 @@ async function translateOneSubtitle(
                 type: "object",
                 additionalProperties: false,
                 properties: {
-                  sentenceId: {
-                    type: "integer"
-                  },
-                  translatedText: {
-                    type: "string"
-                  }
+                  sentenceId: { type: "integer" },
+                  translatedText: { type: "string" }
                 },
-                required: [
-                  "sentenceId",
-                  "translatedText"
-                ]
+                required: ["sentenceId", "translatedText"]
               }
             }
           },
-          required: [
-            "translations"
-          ]
+          required: ["translations"]
         }
       }
     },
-
     input: `
 You are a professional subtitle translator.
 
-Translate this subtitle into natural ${translateInto}.
+Translate this subtitle into natural ${targetLanguage}.
 
 Use the Translation Context Memory.
 
@@ -351,140 +212,69 @@ ${JSON.stringify({
   text: sentence.text
 })}
 `
-});
-
-    
+  });
 
   try {
     const parsed = response.output_parsed;
 
-    if (
-      !parsed ||
-      !Array.isArray(parsed.translations) ||
-      parsed.translations.length !== 1
-    ) {
+    if (!parsed || !Array.isArray(parsed.translations) || parsed.translations.length !== 1) {
       throw new Error("Invalid translation format");
     }
 
-    const { sentenceId, translatedText } =
-      parsed.translations[0];
+    const { sentenceId, translatedText } = parsed.translations[0];
 
     return {
       sentenceId,
       translatedText
     };
-  }
-  catch (error) {
-    console.log("\n=== RETRY INPUT ===");
-    console.log(sentence);
-
-    console.log("\n=== RETRY OUTPUT ===");
-    console.log(response.output_text);
-
+  } catch (error) {
     throw error;
   }
-
 }
 
 export async function translateTranscript(
   transcriptSentence,
   context,
-  onChunk = () => {}
+  onChunk = () => {},
+  targetLanguage = translateInto
 ) {
-  const start =
-    Date.now();
+  const start = Date.now();
 
   let ttfs = null;
-
   let totalInputTokens = 0;
   let totalOutputTokens = 0;
   let totalRetryCount = 0;
 
-  const chunks =
-    chunkArray(
-      transcriptSentence,
-      12
-    );
+  const chunks = chunkArray(transcriptSentence, CHUNK_SIZE);
 
-  console.log(
-    `\n총 ${chunks.length}개 청크로 분할`
+  const promises = chunks.map((chunk, index) =>
+    translateChunk(chunk, context, index, targetLanguage).then((result) => {
+      if (ttfs === null) {
+        ttfs = Date.now() - start;
+      }
+      onChunk(result);
+      return result;
+    })
   );
 
-  console.log(
-    chunks.map(
-      chunk => chunk.length
-    )
-  );
-
-  const promises =
-    chunks.map(
-      (chunk, index) =>
-        translateChunk(
-          chunk,
-          context,
-          index
-        )
-        .then(result => {
-
-          if (ttfs === null) {
-
-            ttfs =
-              Date.now() - start;
-
-          }
-
-          onChunk(result);
-
-          return result;
-
-        })
-    );
-
-  const results =
-    await Promise.all(
-      promises
-    );
+  const results = await Promise.all(promises);
 
   for (const result of results) {
-
-    totalInputTokens +=
-      result.usage.input_tokens;
-
-    totalOutputTokens +=
-      result.usage.output_tokens;
-
-    totalRetryCount +=
-      result.retryCount;
-
+    totalInputTokens += result.usage.input_tokens;
+    totalOutputTokens += result.usage.output_tokens;
+    totalRetryCount += result.retryCount;
   }
 
-  const translation =
-    results.flatMap(
-      result =>
-        result.translation
-    );
+  const translation = results.flatMap((result) => result.translation);
 
   return {
-
     translation,
-
     usage: {
-
-      inputTokens:
-        totalInputTokens,
-
-      outputTokens:
-        totalOutputTokens
-
+      inputTokens: totalInputTokens,
+      outputTokens: totalOutputTokens
     },
-
-    chunkCount:
-      chunks.length,
-
+    chunkCount: chunks.length,
     ttfs,
-
-    retryCount:
-      totalRetryCount
-
+    retryCount: totalRetryCount
   };
 }

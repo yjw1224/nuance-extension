@@ -869,146 +869,146 @@ ${JSON.stringify(candidatePairs, null, 2)}
 
 
   // --------------------------------
-// 9. Deduplicate relations
-// --------------------------------
-
-const relationMap = new Map();
-
-for (const relation of relations) {
-
-  const {
-    source,
-    target,
-    type
-  } = relation;
-
-
+  // 9. Deduplicate relations
   // --------------------------------
-  // Representation
-  // --------------------------------
-  //
-  // Representation is symmetric.
-  // C001 <-> C002 is the same relation.
-  //
 
-  if (type === "representation") {
+  const relationMap = new Map();
 
-    const normalizedKey = [
+  for (const relation of relations) {
+
+    const {
       source,
-      target
-    ]
-      .sort()
-      .join("|");
+      target,
+      type
+    } = relation;
+
+
+    // --------------------------------
+    // Representation
+    // --------------------------------
+    //
+    // Representation is symmetric.
+    // C001 <-> C002 is the same relation.
+    //
+
+    if (type === "representation") {
+
+      const normalizedKey = [
+        source,
+        target
+      ]
+        .sort()
+        .join("|");
+
+
+      if (
+        !relationMap.has(
+          normalizedKey
+        )
+      ) {
+
+        const [a, b] = [
+          source,
+          target
+        ].sort();
+
+
+        relationMap.set(
+          normalizedKey,
+          {
+            source: a,
+            target: b,
+            type
+          }
+        );
+
+      }
+
+      continue;
+    }
+
+
+    // --------------------------------
+    // Directed relations
+    // --------------------------------
+    //
+    // child / causal preserve direction.
+    //
+    // C001 -> C002
+    // C002 -> C001
+    //
+    // are different relations at this stage.
+    //
+
+    const directedKey =
+      `${source}|${target}|${type}`;
 
 
     if (
       !relationMap.has(
-        normalizedKey
+        directedKey
       )
     ) {
 
-      const [a, b] = [
-        source,
-        target
-      ].sort();
-
-
       relationMap.set(
-        normalizedKey,
+        directedKey,
         {
-          source: a,
-          target: b,
+          source,
+          target,
           type
         }
       );
 
     }
 
-    continue;
   }
 
 
   // --------------------------------
-  // Directed relations
+  // 10. Remove reciprocal directed relations
   // --------------------------------
   //
-  // child / causal preserve direction.
+  // Example:
   //
-  // C001 -> C002
-  // C002 -> C001
+  // C002 -> C003 causal
+  // C003 -> C002 causal
   //
-  // are different relations at this stage.
+  // If both directions exist for the same
+  // directed relation type, treat the pair
+  // as ambiguous and remove both.
   //
 
-  const directedKey =
-    `${source}|${target}|${type}`;
+  const finalRelations =
+    Array.from(
+      relationMap.values()
+    ).filter(relation => {
 
-
-  if (
-    !relationMap.has(
-      directedKey
-    )
-  ) {
-
-    relationMap.set(
-      directedKey,
-      {
-        source,
-        target,
-        type
+      // Representation is symmetric,
+      // so reciprocal checking does not apply.
+      if (
+        relation.type ===
+        "representation"
+      ) {
+        return true;
       }
-    );
-
-  }
-
-}
 
 
-// --------------------------------
-// 10. Remove reciprocal directed relations
-// --------------------------------
-//
-// Example:
-//
-// C002 -> C003 causal
-// C003 -> C002 causal
-//
-// If both directions exist for the same
-// directed relation type, treat the pair
-// as ambiguous and remove both.
-//
-
-const finalRelations =
-  Array.from(
-    relationMap.values()
-  ).filter(relation => {
-
-    // Representation is symmetric,
-    // so reciprocal checking does not apply.
-    if (
-      relation.type ===
-      "representation"
-    ) {
-      return true;
-    }
+      const reverseExists =
+        Array.from(
+          relationMap.values()
+        ).some(other =>
+          other.type ===
+            relation.type &&
+          other.source ===
+            relation.target &&
+          other.target ===
+            relation.source
+        );
 
 
-    const reverseExists =
-      Array.from(
-        relationMap.values()
-      ).some(other =>
-        other.type ===
-          relation.type &&
-        other.source ===
-          relation.target &&
-        other.target ===
-          relation.source
-      );
+      return !reverseExists;
 
-
-    return !reverseExists;
-
-  });
+    });
 
 
   // --------------------------------

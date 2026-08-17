@@ -1,6 +1,7 @@
 import {openai} from './openai.js'
 
-const SU_LENGTH_LIMIT = 90;
+const SU_LENGTH_LIMIT = 65;
+const SU_WORD_LIMIT = 12;
 
 // ==================================================
 // Main
@@ -51,9 +52,10 @@ export async function reconstructSentenceUnits(
     await openai.responses.parse({
 
       model:
-        process.env.OPENAI_LEARNING_MODEL,
+        process.env.OPENAI_TRANSLATION_MODEL,
 
-      temperature: 0,
+      // temperature: 0,
+      reasoning: { effort: "none" },
 
       text: {
 
@@ -106,7 +108,7 @@ Do not analyze concepts, roles, topics, or explanation structure.
 Rules:
 
 Priority order:
-1. Hard constraint: never create a Sentence Unit longer than ${SU_LENGTH_LIMIT} characters. If a sentence or fragment exceeds this length, split it at the nearest subtitleId-safe boundary before the limit is exceeded.
+1. Hard constraint: never create a Sentence Unit longer than ${SU_WORD_LIMIT} words. If a sentence or fragment exceeds this length, split it at the nearest subtitleId-safe boundary before the limit is exceeded.
 2. Hard constraint: never split within a single original subtitle. Each Sentence Unit must stay within one original subtitleId boundary; do not break a subtitle into smaller subtitle-level pieces.
 3. Hard constraint: never split solely at an arbitrary character position. Only split at a genuine linguistic boundary, and keep each resulting Sentence Unit within the same original subtitleId.
 4. Keep fragments together when they form one sentence or utterance.

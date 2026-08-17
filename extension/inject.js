@@ -50,7 +50,8 @@ window.fetch =
             type:
               "NUANCE_SUBTITLE_JSON",
 
-            subtitleJson
+            subtitleJson,
+            sourceLanguage: LANGUAGE
 
           },
 
@@ -147,7 +148,8 @@ function (...args) {
             type:
               "NUANCE_SUBTITLE_JSON",
 
-            subtitleJson
+            subtitleJson,
+            sourceLanguage: LANGUAGE
 
           },
 

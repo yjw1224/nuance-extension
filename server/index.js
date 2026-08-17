@@ -91,6 +91,7 @@ app.post("/video/translate", async (req, res) => {
       sentenceUnits,
       subtitles,
       sentenceSubtitles,
+      sourceLanguage = "ko",
       targetLanguage = "ko"
     } = req.body;
 
@@ -100,6 +101,7 @@ app.post("/video/translate", async (req, res) => {
       sentenceUnits,
       subtitles,
       sentenceSubtitles,
+      sourceLanguage,
       targetLanguage
     });
 
@@ -168,10 +170,4 @@ app.post("/video/knowledge", async (req, res) => {
 const PORT =
   process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-
-  console.log(
-    `Nuance server running on port ${PORT}`
-  );
-
-});
+app.listen(PORT, () => {});

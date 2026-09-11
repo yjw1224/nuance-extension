@@ -1,7 +1,7 @@
 import { openai } from "./openai.js";
 import { translateInto } from "./language.js";
 
-const CHUNK_SIZE = 8;
+const CHUNK_SIZE = 10;
 
 function chunkArray(array, chunkSize = CHUNK_SIZE) {
   const chunks = [];

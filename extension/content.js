@@ -100,9 +100,14 @@ class ObservationBuffer {
     async flush() {
 
         if (
+          !isWatchPage() ||
             this.events.size === 0 &&
             this.pauseDurations.length === 0
         ) {
+          if (!isWatchPage()) {
+            this.events = [];
+            this.pauseDurations = [];
+          }
             return;
         }
 
@@ -198,6 +203,7 @@ let sentenceUnitsVideoId = null;
 
 let debugSentenceUnitsOnly = true;
 let debugDualSubtitles = false;
+let debugSubtitleVisible = true;
 let targetLanguage = "en";
 let translationPending = false;
 let languageRequestSeq = 0;
@@ -249,6 +255,9 @@ box.className =
 
 box.setAttribute("aria-live", "polite");
 
+let observedPlayer = null;
+let playerResizeObserver = null;
+
 function ensureSubtitleBoxAttached() {
   const video = document.querySelector("video");
   const player =
@@ -257,6 +266,22 @@ function ensureSubtitleBoxAttached() {
 
   if (!player) {
     return false;
+  }
+
+  if (observedPlayer !== player) {
+    playerResizeObserver?.disconnect();
+
+    const updatePlayerHeight = () => {
+      player.style.setProperty(
+        "--nuance-player-height",
+        `${player.clientHeight}px`
+      );
+    };
+
+    updatePlayerHeight();
+    playerResizeObserver = new ResizeObserver(updatePlayerHeight);
+    playerResizeObserver.observe(player);
+    observedPlayer = player;
   }
 
   if (box.parentElement !== player) {
@@ -308,7 +333,7 @@ function renderSubtitleText(text, sourceText = "") {
     box.textContent = translatedText;
   }
 
-  box.style.display = "block";
+  box.style.display = debugSubtitleVisible ? "block" : "none";
 }
 
 function ensureDebugPanel() {
@@ -340,6 +365,7 @@ function ensureDebugPanel() {
       <button id="nuance-debug-toggle" style="border:none; border-radius:999px; padding:5px 10px; background:#38bdf8; color:#082f49; font-weight:700; cursor:pointer;">SU only: OFF</button>
     </div>
     <button id="nuance-debug-dual-subtitle-toggle" style="width:100%; border:none; border-radius:999px; padding:5px 10px; margin-bottom:8px; background:#38bdf8; color:#082f49; font-weight:700; cursor:pointer;">이중 자막: OFF</button>
+    <button id="nuance-debug-subtitle-visibility-toggle" style="width:100%; border:none; border-radius:999px; padding:5px 10px; margin-bottom:8px; background:#38bdf8; color:#082f49; font-weight:700; cursor:pointer;">자막: ON</button>
     <label style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom: 8px; font-size:12px; color:#e2e8f0;">
       <span>번역 언어</span>
       <select id="nuance-language-select" style="appearance:none; border:1px solid rgba(148,163,184,0.7); border-radius:6px; background:#0f172a; color:#f8fafc; padding:4px 8px; min-width: 112px; font-size:12px; cursor:pointer;">
@@ -366,6 +392,13 @@ function ensureDebugPanel() {
     updateSubtitleFromSentenceUnits();
   });
 
+  const subtitleVisibilityToggle = panel.querySelector("#nuance-debug-subtitle-visibility-toggle");
+  subtitleVisibilityToggle.addEventListener("click", () => {
+    debugSubtitleVisible = !debugSubtitleVisible;
+    updateDebugPanel();
+    updateSubtitleFromSentenceUnits();
+  });
+
   const languageSelect = panel.querySelector("#nuance-language-select");
   languageSelect.value = targetLanguage;
   languageSelect.addEventListener("change", (event) => {
@@ -384,6 +417,7 @@ function updateDebugPanel() {
 
   const toggleButton = panel.querySelector("#nuance-debug-toggle");
   const dualSubtitleToggle = panel.querySelector("#nuance-debug-dual-subtitle-toggle");
+  const subtitleVisibilityToggle = panel.querySelector("#nuance-debug-subtitle-visibility-toggle");
   const modeEl = panel.querySelector("#nuance-debug-mode");
   const timingEl = panel.querySelector("#nuance-debug-timing");
   const translateTimingEl = panel.querySelector("#nuance-debug-translate-timing");
@@ -399,6 +433,12 @@ function updateDebugPanel() {
     dualSubtitleToggle.textContent = `이중 자막: ${debugDualSubtitles ? "ON" : "OFF"}`;
     dualSubtitleToggle.style.background = debugDualSubtitles ? "#fbbf24" : "#38bdf8";
     dualSubtitleToggle.style.color = debugDualSubtitles ? "#111827" : "#082f49";
+  }
+
+  if (subtitleVisibilityToggle) {
+    subtitleVisibilityToggle.textContent = `자막: ${debugSubtitleVisible ? "ON" : "OFF"}`;
+    subtitleVisibilityToggle.style.background = debugSubtitleVisible ? "#38bdf8" : "#fbbf24";
+    subtitleVisibilityToggle.style.color = debugSubtitleVisible ? "#082f49" : "#111827";
   }
 
   if (modeEl) {
@@ -484,6 +524,10 @@ async function applyLanguageSelection() {
   const resolvedVideoId = videoId || sentenceUnitsVideoId;
 
   try {
+    if (!isWatchPage()) {
+      return;
+    }
+
     const translateRequest = fetch(`${SERVER_ADDRESS}/video/translate`, {
       method: "POST",
       headers: {
@@ -500,7 +544,7 @@ async function applyLanguageSelection() {
       })
     });
 
-    if (!debugSentenceUnitsOnly) {
+    if (!debugSentenceUnitsOnly && isWatchPage()) {
       await fetch(`${SERVER_ADDRESS}/video/knowledge`, {
         method: "POST",
         headers: {
@@ -754,6 +798,10 @@ async function handleSubtitleMessage(message) {
         channel,
         sentenceSubtitles,
       };
+
+      if (!isWatchPage()) {
+        return;
+      }
 
       const sentenceUnitResponse =
         await fetch(

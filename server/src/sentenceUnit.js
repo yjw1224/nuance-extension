@@ -1,7 +1,7 @@
 import {openai} from './openai.js'
 
 const SU_LENGTH_LIMIT = 65;
-const SU_WORD_LIMIT = 12;
+const SU_WORD_LIMIT = 10;
 
 // ==================================================
 // Main

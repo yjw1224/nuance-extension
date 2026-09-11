@@ -2,7 +2,7 @@
 // fetch
 // =====================
 
-const LANGUAGE = 'ko';
+const LANGUAGE = 'en';
 
 function isWatchPage() {
   try {
